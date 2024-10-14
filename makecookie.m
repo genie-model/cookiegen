@@ -1,16 +1,16 @@
-function [] = muffingen(POPT)
-% muffingen
+function [] = makecookie(POPT)
+% makecookie
 %
 %   ***********************************************************************
-%   *** muffingen [MAKE MUFFIN CONFIG] ************************************
+%   *** makecookie [MAKE COOKIE CONFIG] ***********************************
 %   ***********************************************************************
 %
-%   muffingen(POPT)
+%   makecookie(POPT)
 %   takes 1 argument:
-%   POPT [STRING] (e.g., 'muffingen_settings_BLANK')
+%   POPT [STRING] (e.g., 'makecookie_settings_BLANK')
 %   --> the string for the configuration parameter file
 %   --> if an empty (i.e., '') value is passed to this parameter
-%       then the default parameter set is used (muffingen_settings_BLANK)
+%       then the default parameter set is used (makecookie_settings_BLANK)
 %
 %   NOTE: grid/matrix orientations are :: [LAT,LON] (rows x columns)
 %         (i.e., the orientation as you would view the raw data)
@@ -23,230 +23,8 @@ function [] = muffingen(POPT)
 %   *** HISTORY ***********************************************************
 %   ***********************************************************************
 %
-%   14/01/04: renamed and generalized yoolarate_hadcm3
-%   14/02/09: changed to new re-gridding routine
-%             also updated plotting
-%             set opengl rendering to 'neverselect' to fix plotting bug
-%   15/04/30: moved experiment name into parameter file
-%   16/03/10: time to sort sh*t out ...
-%             added new parameter file parameters
-%             (sub-gridding)
-%   16/08/23: no really ... this time ...
-%             (and complete re-build and simplification of the function)
-%   16/09/09: a little mroe getting-it-together ...
-%   17/02/??: lots of work ...
-%   17/02/23: removed most input parameters (now in option file)
-%             & renamed function
-%   17/02/24: added paths
-%             added user-selectable output dir for output
-%   17/02/26: edits to results path
-%             alt option for 'GCM' ('k1')
-%             improved code formatting and messaging
-%             updated island ordering (largest now occurring first as #1)
-%             & creation of .psiles grid
-%   17/02/27: fixed paths calculation
-%   17/02/28: added visual output of paths
-%   17/03/05: worked on winds ...
-%   17/03/10: more winds ...
-%   17/03/13: added SEDGEM component
-%             removed unused first passed parameter
-%   17/03/18: added user modification of mask
-%             added used modification of k1 (topography)
-%             *** VERSION 0.1 *********************************************
-%   17/03/20: adjusted a few parameter option names
-%             fixed user-editing of mask and k1
-%             added user-editing of borders
-%   17/03/22: developed text file (k1 or mask) input
-%   17/03/23: fixed paths output
-%             revised & added EXAMPLES (but need cleaning up)
-%   17/03/24: further path revision
-%   17/03/24: path generation fixing ... finished(!)
-%   17/03/26: added logging
-%             added saving of config file parameter lines
-%             fixed bug in path cleanup
-%             added checking for tripple junctions in paths
-%             *** VERSION 0.2 *********************************************
-%   17/03/31: added FOAM option code
-%             split apart functions for HadCM3 vs. FOAM
-%             renamed GCM option hadcm3l -> hadcm3
-%   17/04/02: completed FOAM GCM option (wind product re-gridding)
-%             *** VERSION 0.3 *********************************************
-%   17/04/18: sorted out blank option
-%             added (non GCM) albedo profile generation
-%             revised messaging
-%             *** VERSION 0.31 ********************************************
-%   17/04/19: revised config file output (added SEDGEM and ROKGEM lines)
-%             added calculation of solar constant and salinity (from age)
-%             *** VERSION 0.32 ********************************************
-%   17/06/05: fixed missing albedo parameter output ...
-%             *** VERSION 0.33 ********************************************
-%   17/06/07: adjusted mask filtering option behavior
-%             *** VERSION 0.34 ********************************************
-%   17/07/21: added orbital parameters
-%             added options for prescribing specific netCDF filenames
-%   17/07/22: revised file path and name passing and usage
-%             *** VERSION 0.35 ********************************************
-%   17/07/23: added BIOGEM parameters to base config output
-%             *** VERSION 0.36 ********************************************
-%   17/07/27: added simple ('roof') runoff generator
-%             *** VERSION 0.37 ********************************************
-%   17/07/28: small modifications to grid filtering [fun_grid_topo_filter]
-%             removal fo flagging of border topology issues in border #1
-%             (becasue it is not used ot generate a path from)
-%             [find_grid_borders_check]
-%             *** VERSION 0.4 *********************************************
-%   17/07/30: added plot to random runoff generation
-%             *** VERSION 0.41 ********************************************
-%   17/07/31: fixed bug in roofing runoff scheme
-%             *** VERSION 0.42 ********************************************
-%   17/08/04: added air-sea gas exchange parameter re-scaling (HadCM3 FOAM)
-%             *** VERSION 0.43 ********************************************
-%   17/08/15: edited output format for 2D albedo
-%   17/08/16: added minimum ocean k value parameter
-%             (e.g. for flat-bottom ocean)
-%             *** VERSION 0.5 *********************************************
-%   17/08/22: added paleo Ca/Mg
-%             *** VERSION 0.51 ********************************************
-%   17/08/24: added max age (100 Ma) for paleo Ca/Mg
-%             *** VERSION 0.52 ********************************************
-%   17/08/25: fixed bug in written-out file input paths
-%             *** VERSION 0.53 ********************************************
-%   17/10/13: added data path
-%             *** VERSION 0.54 ********************************************
-%   17/10/16: changed '\' -> '/'
-%             ('/' valid under windows MATLAB (as well as normal Win '\')
-%             fixed parsing of which return (to avoid occurrence of '//')
-%             *** VERSION 0.55 ********************************************
-%             NOW MacOSX FRIENDLY!!!
-%   17/10/19: added zip-file extraction for HadCM3L 'sed' netCDF file
-%             *** VERSION 0.56 ********************************************
-%   17/10/20: added par_wor_name (world name) length check
-%             revised wind velocity component naming (now x and y)
-%             (consistent with tau components)
-%             *** VERSION 0.57 ********************************************
-%   17/10/22: added option to control assignment of zonal wind stress
-%             added calibrated air-sea gas exchange scaling parameter
-%             for zonal wind stress
-%             *** VERSION 0.58 ********************************************
-%   17/11/29: fixed erroreous default longitude of perihelion
-%             *** VERSION 0.59 ********************************************
-%   17/12/27: minor comment edits, plus corrected default parameter set
-%   18/02/13: changed log file name
-%             moved order of <RE-GRID TOPO> (later in sequence)
-%             *** VERSION 0.60 ********************************************
-%   18/04/19: fixes for pole-to-pole continents
-%             *** VERSION 0.61 ********************************************
-%   18/04/19: added check and warning when trying to turn land cell to ocn,
-%             but when there is no ocean depth value available
-%             *** VERSION 0.62 ********************************************
-%   18/09/19: added minimum wind stress value [make_grid_winds_zonal.m]
-%             *** VERSION 0.63 ********************************************
-%   18/10/17: minor messaging changes
-%             *** VERSION 0.64 ********************************************
-%   19/01/29: added a parameter to enable n ocean layers to be selected,
-%             but with maximum depth scaled such that surface ocean layer
-%             is the same (this is the parameter -- par_sur_D)
-%             *** VERSION 0.65 ********************************************
-%   19/02/21: fixed missing pass of par_sur_D in 2nd make_genie_grid call
-%             *** VERSION 0.66 ********************************************
-%   19/02/25: made distinction between HadCM3 and HadCM3L
-%             (including moving sed grid generation earlier)
-%             added option not to create and show plots [MUCH FASTER!!]
-%             rationalized stage numbering
-%             *** VERSION 0.67 ********************************************
-%   19/02/28: added option for zonal rather than GCM winds for GCM configs
-%             fixed issues with hadcm3/hadcm3l distinction
-%             name more consistent wind product file naming convention
-%             (replacing '_' with '.')
-%             *** VERSION 0.68 ********************************************
-%   19/03/03: changed detault of surface layer depth scaling [par_sur_D]
-%             to zero (to disable non conventional grid creation)
-%             NOTE: scale depth for a 5000 m 16-level ocean, is 80.840706 m
-%             *** VERSION 0.69 ********************************************
-%   19/03/11: added option for CESM input
-%             also tidied up the HadCM3/HadCM3l options a little
-%             *** VERSION 0.70 ********************************************
-%   19/03/11: fixed FOAM nc name bug
-%             *** VERSION 0.71 ********************************************
-%   19/03/12: further back-compatability
-%             added new option for specifying how wind speed is
-%             averaged/calculated
-%             *** VERSION 0.72 ********************************************
-%   19/03/13: added new mask option for modifying FINAL mask
-%             *** VERSION 0.73 ********************************************
-%   19/03/17: finalized CESM air-sea gas transfer coefficient settings
-%             *** VERSION 0.74 ********************************************
-%   19/05/15: fix for incorrect (sign, NaN) SEDGEM topo
-%             and shitty SEDGEM mask output
-%             *** VERSION 0.75 ********************************************
-%   19/06/10: added (crude) functionality for ROCKE-3D GCM input
-%             NOTE: no air-sea gas exchange calibration yet
-%                   (or any testing ...)
-%             *** VERSION 0.76 ********************************************
-%   19/06/19: generalized out grid in make_regrid_2d
-%             *** VERSION 0.77 ********************************************
-%   19/07/04: initialization bug-fix
-%             *** VERSION 0.78 ********************************************
-%   19/07/08: added an alt 'k1' format -- 'k2'
-%             (as per k1, but without the 'borders' / data buffer)
-%             *** VERSION 0.79 ********************************************
-%   19/08/14: minor netCDF name bug-fixes
-%             *** VERSION 0.80 ********************************************
-%   19/10/23: change to how missing and empty parameter options are handled
-%             for GCM netCDF file names
-%             *** VERSION 0.81 ********************************************
-%   19/11/08: added mask editing modifications
-%             added new default of not forcing tripple junctions to be
-%             corrected manually ... (may ... not always be safe?)
-%             *** VERSION 0.82 ********************************************
-%   19/11/17: cosmetic changes ...
-%             *** VERSION 0.83 ********************************************
-%   19/11/19: adjusted sed depth saving and SEDGEM mask generation
-%             *** VERSION 0.84 ********************************************
-%   19/11/22: tempoary fixes and addiitons ...
-%             *** VERSION 0.00 ********************************************
-%   19/12/03: enabled minimal plotting for 'no plotting' option ... :o)
-%             *** VERSION 0.85 ********************************************
-%   20/02/25: enabled high res topo input
-%   20/02/26: rationalized how standard-compatable deeper oceans are made
-%             *** VERSION 0.86 ********************************************
-%   20/03/09: removed return of an updated maxim depth in calls to 
-%             make_genie_grid
-%             *** VERSION 0.87 ********************************************
-%   20/04/08: bug-fix of .mat input path
-%             bug-fix of conversion of MASK option mask to k1
-%             *** VERSION 0.88 ********************************************
-%   20/04/22: bux-fix to find_grid_borders_check
-%             fix for 5 vs. 6-character UM code length
-%             removed creation of raw path for the 1st border 
-%             in find_grid_paths
-%             (it is never made into a complete path anyway)
-%             *** VERSION 0.89 ********************************************
-%   21/01/22: added explicit limits for SEDGEM take topography
-%             also updated the hypsographic curve used (little difference)
-%             *** VERSION 0.90 ********************************************
-%   21/03/17: version numbering now aligned with cgenie.muffin
-%             *** v0.9.20 *************************************************
-%   21/06/28: edit to HadCM3/l 'a.pdclann' string .nc filename
-%             *** v0.9.21 *************************************************
-%   22/04/25: changed paleo [Ca], [Mg] to: Zeebe and Tyrrell [2019]
-%             (and added [SO4])
-%             *** v0.9.22 *************************************************
-%   22/05/19: fix bug in output for paleo [Ca], [Mg], [SO4]
-%             *** v0.9.23 *************************************************
-%   22/10/26: altered the roofing runoff scheme to retain existing 
-%             directions (e.g. when using a k1 file as input)
-%             also, to improve the user experience, if there are no
-%             path problems, user input is now automatically disabled
-%             also also ... hopefully fixed topo editing color scale issues
-%             (and corrected an accidental k=3 depth truncation in the 
-%             EXAMPLE_K1_permian example)
-%             *** v0.9.24 *************************************************
-%   23/04/05: interim extension for generating ENTS config files
-%             (from HadCM3(L))
-%             *** v0.9.25 *************************************************
-%   24/02/20: fixes for high res SEDGEM grids by Alexandre Pohl
-%             *** v0.9.26 *************************************************
+%   24/10/11: forked from muffingen
+%             *** v0.9.99 *************************************************
 %
 %   ***********************************************************************
 %%
