@@ -133,6 +133,10 @@ end
 if ~exist('opt_debug','var')
     opt_debug=false;
 end
+% [false/true] edit borders?
+if ~exist('opt_user_borders','var')
+    opt_user_borders=false;
+end
 %
 % *** cookiegen derived user settings *********************************** %
 %
@@ -404,6 +408,7 @@ end
 %
 n_step = n_step+1;
 disp(['>   ' num2str(n_step) '. CREATING GENIE GRID ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
 % create GENIE grid
 [go_lonm,go_lone,go_latm,go_late,go_dm,go_de] = make_genie_grid(imax,jmax,kmax,par_max_D,par_lon_off,opt_equalarea,par_add_Dk);
 disp(['       - GENIE grid generated.']);
@@ -412,6 +417,7 @@ disp(['       - GENIE grid generated.']);
 %
 n_step = n_step+1;
 disp(['>   ' num2str(n_step) '. READING AXES INFORMATION ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 switch str(1).gcm
     case {'hadcm3','hadcm3l','foam','cesm','rockee'}
@@ -452,6 +458,7 @@ end
 %
 n_step = n_step+1;
 disp(['>   ' num2str(n_step) '. READING MASK & TOPO GRIDS ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 switch str(1).gcm
     case {'hadcm3','hadcm3l','foam','cesm','rockee'}
@@ -515,6 +522,7 @@ end
 %
 n_step = n_step+1;
 disp(['>   ' num2str(n_step) '. RE-GRIDING MASK ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 switch str(1).gcm
     case {'hadcm3','hadcm3l','foam','cesm','rockee','mat'}
@@ -554,6 +562,7 @@ end
 % *** FILTER MASK ******************************************************* %
 %
 n_step = n_step+1;
+if (opt_debug), input('Press return to CONTINUE ...'); end
 % filter mask if requested
 % NOTE: when loading in a default 'k1' file, best to skip this step
 % set VERSION 0 (raw)
@@ -649,6 +658,7 @@ end
 % *** ADJUST MASK -- USER! ********************************************** %
 %
 n_step = n_step+1;
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 if opt_user
     %
@@ -675,8 +685,8 @@ end
 % *** CREATE FINAL MASK ************************************************* %
 %
 n_step = n_step+1;
-%
 disp(['>   ' num2str(n_step) '. CREATE FINAL MASK ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 % create GENIE NaN masks
 go_masknan = go_mask;
@@ -703,8 +713,8 @@ disp(['       * Final land area fraction   = ', num2str(1.0-so_farea)]);
 % *** RE-GRID TOPO ****************************************************** %
 %
 n_step = n_step+1;
-%
 disp(['>   ' num2str(n_step) '. RE-GRIDING TOPOGRAPHY ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 switch str(1).gcm
     case {'hadcm3','hadcm3l','foam','cesm','rockee','mat'}
@@ -750,8 +760,8 @@ end
 % *** RE-GRID VERTICALLY ************************************************ %
 %
 n_step = n_step+1;
-%
 disp(['>   ' num2str(n_step) '. RE-GRIDING OCEAN BATHYMETRY ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 switch str(1).gcm
     case {'k1','k2'}
@@ -773,6 +783,7 @@ end
 % *** ADJUST TOPO -- AUTOMATIC BATHYMETRY FILTERING ********************* %
 %
 n_step = n_step+1;
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 % carry out basic automatic topo filtering
 if (opt_filtertopo)
@@ -793,9 +804,10 @@ end
 %
 % *** ADJUST TOPO -- USER! ********************************************** %
 %
-n_step = n_step+1;
-%
 if (opt_user)
+    n_step = n_step+1;
+    disp(['>  ' num2str(n_step) '. USER EDITING OF TOPO ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     % filter for ocean but not depth info (k > kmax)
     % search for ocean in the mask that has a 'land' value ...
     % set to the shallowest k1 level and a nominal middepth of that level
@@ -805,8 +817,6 @@ if (opt_user)
         go_k1(loc_dry) = (par_max_k-(par_min_Dk-1));
         go_topo(loc_dry) = -go_dm(par_max_k);
     end
-    %
-    disp(['>  ' num2str(n_step) '. USER EDITING OF TOPO ...']);
     % user-editing! what can go wrong?
     [go_k1] = fun_grid_edit_k1(go_k1,kmax);
     % plot mask
@@ -823,6 +833,13 @@ if (opt_user)
     fprintf('       - User-editing complete.\n')
     %
 end
+%
+% *** REPORT FINAL TOPO ************************************************* %
+%
+n_step = n_step+1;
+disp(['>  ' num2str(n_step) '. FINAL TOPO ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
+%
 % plot final topo
 if (isempty(par_plotformat))
     %
@@ -831,6 +848,13 @@ elseif (strcmp(par_plotformat,'pdf'))
 else
     imagesc(go_masknan.*go_topo); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.topo_out.FINAL']'.' str_date '.' par_plotformat]);
 end
+%
+% *** REPORT FINAL K1 *************************************************** %
+%
+n_step = n_step+1;
+disp(['>  ' num2str(n_step) '. FINAL K1 ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
+%
 % plot final k1
 if (isempty(par_plotformat))
     %
@@ -843,11 +867,12 @@ end
 % *** CALCULATE RUNOFF & COMPLETE k1 FILE ******************************* %
 %
 n_step = n_step+1;
+disp(['>  ' num2str(n_step) '. CALCULATING RUN-OFF AND GENERATE .k1 FILE ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 % NOTE: ordering is a little illogical becasue
 %       make_grid_runoff_rnd requires the extended grid, while
 %       make_grid_runoff_roof is easier done without ...
-disp(['>  ' num2str(n_step) '. CALCULATING RUN-OFF AND GENERATE .k1 FILE ...']);
 % (i) first, check for all ocean
 if (max(max(go_k1)) < 90), opt_makerunoff = false; end
 % (ii) create roofinf runoff scheme
@@ -891,11 +916,11 @@ end
 %
 % *** IDENTIFY ISLANDS ************************************************** %
 %
-n_step = n_step+1;
-%
 if opt_makegold
     %
+    n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. IDENTIFY ISLANDS ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     % initial islands count
     [go_islands,n_islands,i_islands] = find_grid_islands(go_mask);
     % plot islands
@@ -911,11 +936,11 @@ end
 %
 % *** UPDATE ISLANDS AND ISLAND PATHS *********************************** %
 %
-n_step = n_step+1;
-%
 if opt_makegold
     %
+    n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. UPDATING ISLANDS & PATHS ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     % NOTE: generate all possible paths initially (and filter later)
     % (1) generate generic borders around all (initial) islands
     %     NOTE: co_borders is the cell array equivalent of go_borders
@@ -952,10 +977,8 @@ if opt_makegold
     else
         imagesc(go_borders); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.brds_out.FILTERED']'.' str_date '.' par_plotformat]);
     end
-    % % (4) border check
-    % [go_borders,opt_user] = find_grid_borders_check(go_borders,go_mask,opt_user);
     % (5) user editing of borders
-    if opt_user
+    if opt_user_borders
         % user-editing! what can go wrong?
         [go_borders] = fun_grid_edit_borders(go_borders,go_mask);
         % plot mask
@@ -980,13 +1003,12 @@ end
 %
 % *** GENERATE ISLAND PATHS ********************************************* %
 %
-n_step = n_step+1;
-%
 if opt_makegold
     %
+    n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. GENERATING .paths FILE ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     % create paths
-    %%%[n_paths,v_paths,n_islands,go_paths] = find_grid_paths(go_borders,n_islands,i_poles);
     [n_paths,v_paths,n_islands,go_paths] = make_paths(co_borders,n_islands,i_poles);
     % plot paths data
     if (isempty(par_plotformat))
@@ -1004,11 +1026,11 @@ end
 %
 % *** GENERATE PSI ISLANDS ********************************************** %
 %
-n_step = n_step+1;
-%
 if opt_makegold
     %
+    n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. GENERATING .psiles FILE ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     % generate PSI islands data
     [go_psiles,n_islands_recnt] = make_grid_psiles(go_islands,i_poles);
     % plot PSI islands data
@@ -1031,11 +1053,11 @@ end
 %
 % *** GENERATE SEDIMENT GRID ******************************************** %
 %
-n_step = n_step+1;
-%
 if opt_makeseds
     %
+    n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. GENERATING SEDIMENT TOPO ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     %
     % check sed topo re-gridding options
     % NOTE: assume gos_topo is POSITIVE (depth below surface)
@@ -1130,13 +1152,14 @@ end
 %
 % *** SWITCH GRIDS ****************************************************** %
 %
-n_step = n_step+1;
 %
 % NOTE: only with HadCM3 do we need to switch from ocean to atm grid
 switch str(1).gcm
     case {'hadcm3'}
         %
+        n_step = n_step+1;
         disp(['>  ' num2str(n_step) '. SWITCH GRIDS ...']);
+        if (opt_debug), input('Press return to CONTINUE ...'); end
         % re-read axes
         [gi_loncm,gi_lonce,gi_latcm,gi_latce,gi_lonpm,gi_lonpe,gi_latpm,gi_latpe,gi_lonam,gi_lonae,gi_latam,gi_latae] = fun_read_axes_hadcm3x(str);
         disp(['       - Axis info re-read.']);
@@ -1148,16 +1171,16 @@ end
 % *** RE-GRID WIND SPEED/STRESS DATA ************************************ %
 %
 n_step = n_step+1;
+disp(['>  ' num2str(n_step) '. CREATING WIND PRODUCTS ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 if (opt_makezonalwind)
     %
-    disp(['>  ' num2str(n_step) '. CREATING ZONAL-ONLY WIND PRODUCTS ...']);
     % create GENIE grid wind products
     make_grid_winds_zonal(go_latm,go_late,go_mask,[str_dirout '/' str_nameout],par_tauopt,par_plotformat);
     disp(['       - Generated zonal wind products.']);
 else
     %
-    disp(['>  ' num2str(n_step) '. CREATING WIND PRODUCTS ...']);
     % create GENIE grid wind products
     switch str(1).gcm
         case {'hadcm3','hadcm3l','foam','cesm','rockee'}
@@ -1181,11 +1204,11 @@ end
 %
 % *** LOAD PLANETARY ALBEDO DATA **************************************** %
 %
-n_step = n_step+1;
-%
 if (~opt_makezonalalbedo)
     %
+    n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. LOADING PLANETARY ALBEDO DATA ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     %
     switch str(1).gcm
         case {'hadcm3','hadcm3l','foam','cesm','rockee'}
@@ -1217,10 +1240,10 @@ end
 % *** RE-GRID & PROCESS PLANETARY ALBEDO ******************************** %
 %
 n_step = n_step+1;
+disp(['>  ' num2str(n_step) '. CREATING PLANETARY ALBEDO DATA ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 if (~opt_makezonalalbedo)
-    %
-    disp(['>  ' num2str(n_step) '. CREATING PLANETARY ALBEDO DATA ...']);
     %
     switch str(1).gcm
         case {'hadcm3','hadcm3l','foam','cesm','rockee'}
@@ -1281,12 +1304,12 @@ fprintf('       - Zonal mean .albd_pl.dat file saved\n')
 %
 % *** LOAD & PROCESS FULL ALBEDO PRODUCTS ******************************* %
 %
-n_step = n_step+1;
-%
 % for ENTS-enabled configs
 if opt_makeents
     %
+    n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. LOADING SURFACE & CLOUD ALBEDO DATA ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     %
     switch str(1).gcm
         case {'hadcm3','hadcm3l'}
@@ -1381,8 +1404,6 @@ end
 %
 % *** LOAD ICE MASK & OROGRAPHY DATA ************************************ %
 %
-n_step = n_step+1;
-%
 % for ENTS-enabled configs
 % NOTE: for now, allow HadCM3(L) input only
 %       make flat orography for other inputs
@@ -1392,7 +1413,9 @@ n_step = n_step+1;
 %
 if opt_makeents
     %
+    n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. LOADING ICE MASK & OROGRAPHY DATA ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     %
     switch str(1).gcm
         case {'hadcm3','hadcm3l'}
@@ -1429,15 +1452,15 @@ end
 %
 % *** RE-GRID ICE MASK & OROGRAPHY DATA ********************************* %
 %
-n_step = n_step+1;
-%
 % for ENTS-enabled configs
 % NOTE: for now, assuming HadCM3(L) where ice=1 & no ice=0
 % NOTE: the ice mask is not changed after this point
 % NOTE: ice mask and orography on atmospheric grid
 if opt_makeents
     %
+    n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. CREATING ICE MASK & OROGRAPHY DATA ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     %
     switch str(1).gcm
         case {'hadcm3','hadcm3l'}
@@ -1572,8 +1595,8 @@ end
 % *** GENERATE CONFIG FILE PARAMETER LINES ****************************** %
 %
 n_step = n_step+1;
-%
 disp(['>  ' num2str(n_step) '. GENERATING CONFIG FILE PARAMETER LINES ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
 %
 fid = fopen([str_dirout '/' 'config_' str_date '.txt'],'w');
 % START

@@ -13,8 +13,8 @@ par_age=0.0;                   % [0.0-4570.0] optional age (Myr)
 %
 % *** INPUT + OUTPUT SETTINGS ******************************************* %
 %
-par_pathin='../INPUT.UM';      % ['STRING'] path to input dir
-par_pathout='../OUTPUT.UM';    % ['STRING'] path to output dir
+par_pathin='INPUT';            % ['STRING'] path to input dir
+par_pathout='OUTPUT';          % ['STRING'] path to output dir
 par_plotformat='png';          % 'png' ,'jpg','pdf' (high res), '' for NONE
 opt_user=false;                % [false/true] force user input to grid
 %

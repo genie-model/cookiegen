@@ -6,17 +6,17 @@
 %
 % *** CONFIG NAME AND INPUT DATA SETTINGS ******************************* %
 %
-par_wor_name='uteXpw__';       % ['STRING'] 8-char (output) config name
-par_gcm='hadcm3l';             % ['STRING'] input format/GCM name
-par_expid='teXpw';             % ['STRING'] input experiment/data name
-par_age=370.0;                 % [0.0-4570.0] optional age (Myr)
+par_wor_name='worblank';       % ['STRING'] 8-char (output) config name
+par_gcm='';                    % ['STRING'] input format/GCM name
+par_expid='';                  % ['STRING'] input experiment/data name
+par_age=0.0;                   % [0.0-4570.0] optional age (Myr)
 %
 % *** INPUT + OUTPUT SETTINGS ******************************************* %
 %
 par_pathin='INPUT';            % ['STRING'] path to input dir
 par_pathout='OUTPUT';          % ['STRING'] path to output dir
 par_plotformat='png';          % 'png' ,'jpg','pdf' (high res), '' for NONE
-opt_user=false;                % [false/true] force user input to grid
+opt_user=true;                 % [false/true] force user input to grid
 %
 % *** GRID -- HORIZONTAL ************************************************ %
 %
@@ -29,7 +29,7 @@ par_lon_off=-180.0;            % [-360-0] longitude offset of grid start
 %
 par_max_k=16;                  % [1-99] total # levels in ocean
 par_max_k_shallow=15;          % [1-99] maximum shallow water # level
-par_min_k=1;                   % [1-99] minimum ocean depth (k value)
+par_min_k=3;                   % [1-99] minimum ocean depth (k value)
 par_max_D=5000.0;              % [0.0-99999.9] ocean depth (m) at k=1
 %
 % *** MODULE SUPPORT **************************************************** %
