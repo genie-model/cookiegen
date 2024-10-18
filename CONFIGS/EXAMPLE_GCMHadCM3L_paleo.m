@@ -1,95 +1,48 @@
 % cookiegen_settings
-%
-%   ***********************************************************************
-%   *** PARAMETER SETTINGS FOR cookiegen CONFIG GENERATOR *****************
-%   ***********************************************************************
-%
-%   (edit this file directly)
-%
-%   ***********************************************************************
 
 % *********************************************************************** %
-% *** USER SETTINGS ***************************************************** %
+% *** USER SETTINGS FOR cookiegen CONFIG GENERATOR ********************** %
 % *********************************************************************** %
 %
-% PARAM NAME & DEFAULT VALUE   % [FORMAT] BRIEF DESCRIPTION
-%
-% *** CONFIG NAME AND MAIN INPUT SETTINGS ******************************* %
+% *** CONFIG NAME AND INPUT DATA SETTINGS ******************************* %
 %
 par_wor_name='uteXpw__';       % ['STRING'] 8-char (output) config name
 par_gcm='hadcm3l';             % ['STRING'] input format/GCM name
 par_expid='teXpw';             % ['STRING'] input experiment/data name
+par_age=370.0;                 % [0.0-4570.0] optional age (Myr)
 %
-% *** FILE PATHS ******************************************************** %
+% *** INPUT + OUTPUT SETTINGS ******************************************* %
 %
-par_pathin='INPUT.UM';   % ['STRING'] path to input dir
-par_pathout='OUTPUT.UM'; % ['STRING'] path to output dir
-opt_outputdir=false;           % [false/true] ask for output directory?
+par_pathin='../INPUT.UM';      % ['STRING'] path to input dir
+par_pathout='../OUTPUT.UM';    % ['STRING'] path to output dir
+par_plotformat='png';          % 'png' ,'jpg','pdf' (high res), '' for NONE
+opt_user=false;                % [false/true] force user input to grid
 %
-% *** GCM netCDF FILENAMES ********************************************** %
-%
-par_nc_topo_name  = '';        % ['STRING'] optional .nc name
-par_nc_mask_name  = '';        % ['STRING'] optional .nc name
-par_nc_axes_name  = '';        % ['STRING'] optional .nc name
-par_nc_atmos_name = '';        % ['STRING'] optional .nc name
-par_nc_ocean_name = '';        % ['STRING'] optional .nc name
-par_nc_coupl_name = '';        % ['STRING'] optional .nc name
-%
-% *** GRID RESOLUTION *************************************************** %
+% *** GRID -- HORIZONTAL ************************************************ %
 %
 par_max_i=36;                  % [1-72] # grid cells in longitude dir (i)
 par_max_j=36;                  % [1-72] # grid cells in latitude  dir (j)
-par_max_k=16;                  % [1-99] # depth leves in ocean
 opt_equalarea=true;            % [false/true] equal area grid?
+par_lon_off=-180.0;            % [-360-0] longitude offset of grid start
 %
-% *** REGRIDDING SETTINGS *********************************************** %
+% *** GRID -- vertical ************************************************** %
 %
-par_max_D=5000.0;              % [0.0-99999.9] max grid depth (m)
-par_add_Dk=0;                  % [0-99] # of ocean levels that are 'extra' 
-par_min_Dk=2;                  % [1-99] minimum ocean depth (as # levels)
-par_min_k=1;                   % [1-99] maximum ocean depth (k value)
-par_lon_off=-260.0;            % [-360-0] longitude offset of grid start
-par_A_frac_threshold=0.45;     % [0.0-1.0] land fractional area threshold  
-par_mask_mask_name = '';       % ['STRING'] mask of land/ocean features
-par_sedsopt=0;                 % [0/1/2] sediment re-gridding option
-par_sed_Dmin=1000.0;           % minimm (random, option 2) sediment depth
-par_sed_Dmax=6000.0;           % maximum (random, option 2) sediment depth
-opt_highresseds=false;         % [false/true] create 2x res sediment grid
+par_max_k=16;                  % [1-99] total # levels in ocean
+par_max_k_shallow=15;          % [1-99] maximum shallow water # level
+par_min_k=1;                   % [1-99] minimum ocean depth (k value)
+par_max_D=5000.0;              % [0.0-99999.9] ocean depth (m) at k=1
 %
-% *** BOUNDARY CONDITION SETTINGS *************************************** %
+% *** MODULE SUPPORT **************************************************** %
 %
-par_runoffopt=0;               % [0/1] run-off generation option
-par_tauopt=0;                  % [0/1/2] zonal windstress generation option
-par_age=370.0;                   % [0.0-4570.0] optional age (Myr)
+opt_makegold=true;             % [false/true] make GOLDSTEIN ocean files?
+opt_makeseds=false;            % [false/true] make SEDGEM files
+opt_makeents=false;            % [false/true] make ENTS files?
 %
-% *** OPTIONS -- MAIN *************************************************** %
+% *** BOUNDARY CONDITION SIMPLIFICATIONS ******************************** %
 %
-opt_makeall=false;             % [false/true] apply all common options?
-opt_user=true;                 % [false/true] enable user input to grid
-opt_plots=true;                % [false/true] plot all input and output?
-%
-% *** OPTIONS -- DATA GENERATION **************************************** %
-%
-opt_makemask=true;             % [false/true] re-grid mask?
-opt_maketopo=true;             % [false/true] re-grid bathymetry?
-opt_makeocean=true;            % [false/true] create ocean files?
-opt_makerunoff=false;           % [false/true] create runoff pattern?
-opt_makewind=false;             % [false/true] re-grid wind products?
-opt_makezonalwind=true;       % [false/true] force zonal wind generation
-opt_makealbedo=false;           % [false/true] make albedo file
-opt_makeseds=false;             % [false/true] make sediment files
-opt_makeents=false;             % [false/true] create ENTS files?
-%
-% *** OPTIONS -- GRID FILTERING ***************************************** %
-%
-opt_filtermask=true;           % [false/true] filter land-sea mask?
-opt_filtertopo=true;           % [false/true] filter topography?
-opt_makepoleswide=true;        % [false/true] force wide polar island zone
-par_min_oceann=20;             % [0-9999] minimum lake size (# cells)
-%
-% *** ENVIRONMENT/OTHER SETTINGS **************************************** %
-%
-par_dpath_source='source';     % ['source'] relative path to muffingen code
-opt_debug=false;               % [false/true] debug output?
+opt_makezonalwind=true;       % [false/true] generate zonal winds
+opt_makezonalalbedo=true;     % [false/true] generate zonal average albedo
+opt_makerndseds=false;        % [false/true] generate randomised sed depths
+opt_makehighresseds=false;    % [false/true] create 2x res sediment grid
 %
 % *********************************************************************** %
