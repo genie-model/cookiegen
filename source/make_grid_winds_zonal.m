@@ -1,4 +1,4 @@
-function [] = make_grid_winds_zonal(go_latm,go_late,go_mask,str_nameout,par_tauopt)
+function [] = make_grid_winds_zonal(go_latm,go_late,go_mask,str_nameout,par_tauopt,par_plotformat)
 % make_grid_winds_zonal
 %
 %   *********************************************************
@@ -255,21 +255,37 @@ for j=1:jmax
     taux_v_1d(j) = mean(taux_v(j,:));
 end
 % plot figure -- u grid
-figure;
-plot(go_latm(:),taux_u_1d(:));
-axis([-90 90 -0.1 0.2]);
-hold on;
-scatter(go_latm(:),taux_u_1d(:));
-% save figure
-exportgraphics(gcf,[str_nameout, '.taux_u.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
+if (isempty(par_plotformat))
+    %
+else
+    figure;
+    plot(go_latm(:),taux_u_1d(:));
+    axis([-90 90 -0.1 0.2]);
+    hold on;
+    scatter(go_latm(:),taux_u_1d(:));
+    % save figure
+    if (strcmp(par_plotformat,'pdf'))
+        exportgraphics(gcf,[str_nameout, '.taux_u.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
+    else
+        exportgraphics(gcf,[str_nameout, '.taux_u.' str_date '.' par_plotformat]);
+    end
+end
 % plot figure -- v grid
-figure;
-plot(go_late(2:end),taux_v_1d(:));
-axis([-90 90 -0.1 0.2]);
-hold on;
-scatter(go_late(2:end),taux_v_1d(:));
-% save figure
-exportgraphics(gcf,[str_nameout, '.taux_v.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
+if (isempty(par_plotformat))
+    %
+else
+    figure;
+    plot(go_late(2:end),taux_v_1d(:));
+    axis([-90 90 -0.1 0.2]);
+    hold on;
+    scatter(go_late(2:end),taux_v_1d(:));
+    % save figure
+    if (strcmp(par_plotformat,'pdf'))
+        exportgraphics(gcf,[str_nameout, '.taux_v.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
+    else
+        exportgraphics(gcf,[str_nameout, '.taux_v.' str_date '.' par_plotformat]);
+    end
+end
 %
 % *** SAVE FILES ******************************************************** %
 %

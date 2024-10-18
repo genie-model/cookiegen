@@ -7,10 +7,12 @@ function [grid_cells]  = find_grid_3cells(grid_mask)
 % *********************************************************************** %
 %
 %
+% REMEMBER: 1 == ocean
 % determine mask size (remember: [rows columns])
 [jmax imax] = size(grid_mask);
 gc = zeros(jmax,imax);
 % add boundaries to mask
+% NOTE: assign poles as land (== 1)
 gm = grid_mask;
 gm = [gm(:,end) gm gm(:,1)];
 gm = [gm(1,:); gm; gm(end,:)];
