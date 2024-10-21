@@ -1,4 +1,4 @@
-function [] = make_grid_winds_hadcm3x(giloncm,gilonce,gilatcm,gilatce,gilonpm,gilonpe,gilatpm,gilatpe,gimask,golonm,golone,golatm,golate,gomask,str,optplots)
+function [] = make_grid_winds_hadcm3x(giloncm,gilonce,gilatcm,gilatce,gilonpm,gilonpe,gilatpm,gilatpe,gimask,golonm,golone,golatm,golate,gomask,str,par_plotformat)
 % make_grid_winds_hadcm3
 %
 %   *********************************************************
@@ -34,6 +34,14 @@ function [] = make_grid_winds_hadcm3x(giloncm,gilonce,gilatcm,gilatce,gilonpm,gi
 %
 % determine output grid size (remember: [rows columns])
 [jmax, imax] = size(gomask);
+% simple parsing of par_plotformat compatible with existing cookiegen code
+if (isempty(par_plotformat))
+    optplots = false;
+elseif (strcmp(par_plotformat,'pdf'))
+    optplots = true;
+else
+    optplots = false;
+end
 %
 % *********************************************************************** %
 

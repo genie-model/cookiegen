@@ -7,13 +7,14 @@ function [n_paths,v_paths,n_islands,grid_paths] = make_paths(cell_borders,n_isla
 % *********************************************************************** %
 %
 % NOTE: polar borders can be incomplete, hence the pole must be followed
-%       in the same was as an island is
+%       in the same way as an island is
 %       (special borders are created to enable this to occur automatically)
 % NOTE: don't worry initially about the rows being counted from
 %       top-top-bottom (opposite of GENIE grid)
 %       => this is fixed at the very end
 % NOTE: format is of first parameter being the direction to the *next*
 %       cell
+% NOTE: path cannot double-back on itself through the same cell
 % NOTE: GOLDSTEIN directions:
 %        2 == North (+ve v)
 %       -2 == South (-ve v)
@@ -71,7 +72,7 @@ end
 if (n_islands >= 2)
     %
     disp(['       * Ignoring border #1']);
-    % set dummy first path data
+    % set dummy first path data -- length 1
     v_paths = [v_paths; 0 0 0];
     n_paths = [n_paths 1];
     % LOOP >>>
@@ -103,7 +104,7 @@ if (n_islands >= 2)
             error(['Error. \nCould not find upper LH corner of border #' num2str(islnd) ' : %s'],'Exiting ...');
             return;
         end
-        %
+        % copy initial location
         loc_j = j;
         loc_i = i;
         % mark initial cell as searched
@@ -138,25 +139,33 @@ if (n_islands >= 2)
         % record direction taken
         loc_s = 2;
         % initialize vector length at 1
-        % (as the vector has already been populaed with its first line)
+        % (as the vector has already been populated with its first line)
         n_path = 1;
         % now follow path around island -- clockwise
         % NOTE: for an island connected to the N pole, the direction
         %       will be ANTICLOCKWISE (island on left) 
         follow = true;
         while follow
-            % search surrounding cells
-            % find adajacent, unmarked border cell
-            % NOTE: if none exist, finish!
+            % search surrounding cells ... 
+            % ... find adajacent, unmarked border cell
+            % => if no unmarked border cells exist, finish ...
+            %    ... but ONLY if the marked border cell is the start
+            %    otherwise, the path has doubled back on itself
+            %    and a segment of the path will need to be removed
             % NOTE: search direction should start to the RIGHT of last move
-            %       direction and change anticlockwise
+            %       direction and change search direction anticlockwise
+            %       (keeping the island to the right at all times)
             follow = false;
-            for s = loc_s+1:loc_s+4
+            for s = loc_s-1:loc_s+2
                 loc_jj = loc_j + vdsrch_ex(s,1);
                 loc_ii = loc_i + vdsrch_ex(s,2);
-                % test for adjacent border cell
+                % test for adjacent border cell that is
+                % the current border AND unmarked
                 if (gbn_ex(loc_jj,loc_ii,islnd) == islnd) && ~gsn_ex(loc_jj,loc_ii,islnd)
-                    % record current location and direction to next cell
+                    % record:
+                    % *** current location ***
+                    % AND 
+                    % *** direction to next cell ***
                     % directions: 1==S, 2==E, 3==N, 4==W
                     % GOLDSTEIN path notation reminder:
                     %        2 == North
@@ -177,13 +186,13 @@ if (n_islands >= 2)
                     end
                     % update path length count
                     n_path = n_path + 1;
-                    % mark tested cell as searched
+                    % copy location
                     loc_j = loc_jj;
                     loc_i = loc_ii;
+                    % mark tested cell as searched
                     gsn_ex(loc_j,loc_i,islnd) = 1;
                     % test for E-W wall:
-                    % adjust (j,i) location if necessary and also
-                    % mark as searched
+                    % adjust (j,i) location if necessary and mark as searched
                     if (loc_ii == 1)
                         gsn_ex(loc_j,imax+1,islnd) = 1; % wrap-around location
                         loc_i = imax+1;
@@ -198,22 +207,105 @@ if (n_islands >= 2)
                         gsn_ex(loc_jj,1,islnd) = 1;     % wrap-around location
                     end
                     % record direction taken
-                    % NOTE: remember that s might be >4 and in the
+                    % NOTE: remember that s might be > 4 and in the
                     %       wrap-around part of the search vector
+                    %       or 1, when loc_s-1 in the next search loop
+                    %       will casue a problem ...
                     if (s > 4)
                         loc_s = s - 4;
                     else
                         loc_s = s;
                     end
+                    if (loc_s == 1), loc_s = loc_s + 4; end
                     % continue ...
                     follow = true;
                     % exit (s) loop
                     break;
+                end % end if
+            end % end s loop
+
+            if ~follow
+                % at this point, no progress on un-searched path is possible
+                % => find first search cell -- this should be the START ...
+                % ... ...
+                %
+                % find FIRST border cell that is current border AND unmarked
+                % NOTE: remember (i,j) is START location on the extended grid
+                % NOTE: loc_s is not adjusted when the path search draws a blank
+                for s = loc_s-1:loc_s+2
+                    loc_jj = loc_j + vdsrch_ex(s,1);
+                    loc_ii = loc_i + vdsrch_ex(s,2);
+                    if (gbn_ex(loc_jj,loc_ii,islnd) == islnd) && gsn_ex(loc_jj,loc_ii,islnd)
+                        if ((loc_jj == j) && ((loc_ii == i) || (loc_ii-imax == i)))
+                            % start cell found -- true end of path!
+                            % exit (s) loop
+                            break;
+                        else
+                            % doubling back situation ... :(
+                            % find last time this cell was serched
+                            % NOTE: n_path is the local (current) path legnth
+                            %       v_paths contains all path elements + 1
+                            loc_v_path = [];
+                            [loc_nmax tmp] = size(v_paths);
+                            for n=[loc_nmax:-1:loc_nmax-n_path]
+                                if (v_paths(n,2) == loc_ii-1) && (v_paths(n,3) == loc_jj-1)
+                                    loc_v_path = v_paths(n,:);
+                                    break; % exit (n) loop
+                                end
+                            end
+                            %
+                            if isempty(loc_v_path)
+                                disp([' *** There is a very very very sad issue somehow :( ']);
+                                disp([' ']);
+                                diary off;
+                                return;
+                            end
+                        end
+                        % move (return) to duplicate cell location
+                        % and test for E-W wall
+                        loc_i = v_paths(n,2) + 1;
+                        loc_j = v_paths(n,3) + 1;
+                        if (loc_ii == 1)
+                            loc_i = imax+1;
+                        elseif (loc_ii == imax+2)
+                            loc_i = 2;
+                        end
+                        % remove path back to and including dup cell
+                        v_paths(n:loc_nmax,:) = [];
+                        % update path length
+                        n_path = n_path - (loc_nmax-n+1);
+                        % set search direction (East of the last move direction)
+                        % directions: 1==S, 2==E, 3==N, 4==W
+                        % GOLDSTEIN path notation reminder:
+                        %        2 == North
+                        %       -2 == South
+                        %        1 == East
+                        %       -1 == West
+                        switch v_paths(end,1)
+                            case {2}
+                                loc_s = 3;
+                            case {-2}
+                                loc_s = 5;
+                            case {1}
+                                loc_s = 2;
+                            case {-1}
+                                loc_s = 4;
+                        end
+                        % continue ...
+                        follow = true;
+                        % exit (s) loop
+                        break;
+                    end
                 end
             end
-        end
+
+        end % end follow while
+
+
+
+
         % add final location, calculate direction to start, update count
-        % NOTE: take into account upside-down GENIE array indexing in MATLAB
+        % NOTE: take into account upside-down GENIE array MATLAB indexing
         % reminder:
         %        2 == North
         %       -2 == South
@@ -228,14 +320,13 @@ if (n_islands >= 2)
         elseif (loc_j-j) == -1 %South
             v_paths = [v_paths; -2 loc_i-1 loc_j-1];
         else
-            % NOTE: The requirement for 2-cell seperation could be fixed
-            %       (removed) in a future release.
             disp([' *** There is a sad issue somehow :( ']);
             disp([' ']);
             diary off;
             error(['Error. \nFailed to complete path loop @ (',num2str(loc_i),',',num2str(jmax-loc_j+1),'): %s'],'Exiting ...');
             return;
         end
+        %
         n_path = n_path + 1;
         % write out path length
         n_paths = [n_paths n_path];
