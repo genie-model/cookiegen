@@ -7,7 +7,7 @@ function [] = makecookie(POPT)
 %
 %   makecookie(POPT)
 %   takes 1 argument:
-%   POPT [STRING] (e.g., 'makecookie_settings_BLANK')
+%   POPT [STRING] (e.g., 'EXAMPLE_BLANK')
 %   --> the string for the configuration parameter file
 %   --> if an empty (i.e., '') value is passed to this parameter
 %       then the default parameter set is used (makecookie_settings_BLANK)
@@ -23,7 +23,7 @@ function [] = makecookie(POPT)
 %   *** HISTORY ***********************************************************
 %   ***********************************************************************
 %
-%   24/10/11: forked from cookiegen
+%   24/10/11: forked from muffingen
 %             *** v0.9.99 *************************************************
 %
 %   ***********************************************************************
