@@ -84,59 +84,37 @@ end
 % NOTE: mostly these are parameter previously in the config file
 %
 % [0-99] # of ocean levels that are 'extra' 
-if ~exist('par_add_Dk','var')
-    par_add_Dk=0; 
-end
+if ~exist('par_add_Dk','var'), par_add_Dk=0; end
+% surface layer reference thickness (m)
+if ~exist('par_sur_D','var'), par_sur_D = 0.0; end
 % [0.0-1.0] land fractional area threshold 
-if ~exist('par_A_frac_threshold','var')
-    par_A_frac_threshold=0.5;  
-end
+if ~exist('par_A_frac_threshold','var'), par_A_frac_threshold=0.5; end
+% mask mask!
+if ~exist('par_mask_mask_name','var'), par_mask_mask_name = ''; end
 % [false/true] filter land-sea mask?
-if ~exist('opt_filtermask','var')
-    opt_filtermask=true;
-end
+if ~exist('opt_filtermask','var'), opt_filtermask=true; end
 % [false/true] filter topography?
-if ~exist('opt_filtertopo','var')
-    opt_filtertopo=true;
-end
+if ~exist('opt_filtertopo','var'), opt_filtertopo=true; end
 % [false/true] force wide polar island zone
-if ~exist('opt_makepoleswide','var')
-    opt_makepoleswide=true;
-end
+if ~exist('opt_makepoleswide','var'), opt_makepoleswide=true; end
 % [0-9999] minimum lake size (# cells)
-if ~exist('par_min_oceann','var')
-    par_min_oceann=20;
-end
+if ~exist('par_min_oceann','var'), par_min_oceann=20; end
 %
 % [0/1/2] zonal windstress generation option
-if ~exist('par_tauopt','var')
-    par_tauopt=0;  
-end
+if ~exist('par_tauopt','var'), par_tauopt=0; end
 % [false/true] use random runoff scheme
-if ~exist('opt_makerndrunoff','var')
-    opt_makerndrunoff=false;
-end
+if ~exist('opt_makerndrunoff','var'), opt_makerndrunoff=false; end
 % minimm (random, option 2) sediment depth
-if ~exist('par_sed_Dmin','var')
-    par_sed_Dmin=1000.0; 
-end
+if ~exist('par_sed_Dmin','var'), par_sed_Dmin=1000.0; end
 % maximum (random, option 2) sediment depth
-if ~exist('par_sed_Dmax','var')
-    par_sed_Dmax=6000.0; 
-end
+if ~exist('par_sed_Dmax','var'), par_sed_Dmax=6000.0; end
 %
 % [false/true] ask for output directory?
-if ~exist('opt_outputdir','var')
-    opt_outputdir=false;
-end
+if ~exist('opt_outputdir','var'), opt_outputdir=false; end
 % [false/true] debug output?
-if ~exist('opt_debug','var')
-    opt_debug=false;
-end
+if ~exist('opt_debug','var'), opt_debug=false; end
 % [false/true] edit borders?
-if ~exist('opt_user_borders','var')
-    opt_user_borders=false;
-end
+if ~exist('opt_user_borders','var'), opt_user_borders=false; end
 %
 % *** cookiegen derived user settings *********************************** %
 %
@@ -291,6 +269,7 @@ str = setfield(str, {6}, 'nc', par_nc_ocean_name);
 str = setfield(str, {7}, 'nc', par_nc_biome_name);
 str = setfield(str, {8}, 'nc', par_nc_orog_name);
 str = setfield(str, {1}, 'wspd', par_wspeed_avstr);
+str = setfield(str, {1}, 'mask', par_mask_mask_name);
 %
 % *** initialize reporting ********************************************** %
 %
@@ -479,8 +458,8 @@ switch str(1).gcm
             plot_2dgridded(flipud(gi_mask),2.0,'',[[str_dirout '/' str_nameout] '.mask_in'],['mask in']);
             plot_2dgridded(flipud(gi_topo),6000.0,'',[[str_dirout '/' str_nameout] '.topo_in'],['topo in']);
         else
-            imagesc(gi_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.mask_in']'.' str_date '.' par_plotformat]);
-            imagesc(gi_topo); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.topo_in']'.' str_date '.' par_plotformat]);
+            figure; imagesc(gi_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.mask_in']'.' str_date '.' par_plotformat]);
+            figure; imagesc(gi_topo); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.topo_in']'.' str_date '.' par_plotformat]);
         end
     case {'mat'}
         % read topo
@@ -556,7 +535,7 @@ end
 if (strcmp(par_plotformat,'pdf'))
     plot_2dgridded(flipud(go_mask),2.0,'',[[str_dirout '/' str_nameout] '.omask_out.RAW'],['ocean mask out -- RAW re-gridded']);
 else
-    imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.RAW']'.' str_date '.' par_plotformat]);
+    figure; imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.RAW']'.' str_date '.' par_plotformat]);
 end
 %
 % *** FILTER MASK ******************************************************* %
@@ -600,7 +579,7 @@ if (opt_filtermask || (par_min_oceann > 0))
         if (strcmp(par_plotformat,'pdf'))
             plot_2dgridded(flipud(go_mask),2.0,'',[[str_dirout '/' str_nameout] '.omask_out.v' str_ver],['ocean mask out -- version ' str_ver]);
         else
-            imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.v' str_ver]'.' str_date '.' par_plotformat]);
+            figure; imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.v' str_ver]'.' str_date '.' par_plotformat]);
         end
         %
     end
@@ -622,7 +601,7 @@ if (opt_filtermask || (par_min_oceann > 0))
         if (strcmp(par_plotformat,'pdf'))
             plot_2dgridded(flipud(go_mask),2.0,'',[[str_dirout '/' str_nameout] '.omask_out.v' str_ver],['ocean mask out -- version ' str_ver]);
         else
-            imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.v' str_ver]'.' str_date '.' par_plotformat]);
+            figure; imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.v' str_ver]'.' str_date '.' par_plotformat]);
         end
         %
     end
@@ -644,7 +623,7 @@ if (opt_filtermask || (par_min_oceann > 0))
         if (strcmp(par_plotformat,'pdf'))
             plot_2dgridded(flipud(go_mask),2.0,'',[[str_dirout '/' str_nameout] '.omask_out.v' str_ver],['ocean mask out -- version ' str_ver]);
         else
-            imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.v' str_ver]'.' str_date '.' par_plotformat]);
+            figure; imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.v' str_ver]'.' str_date '.' par_plotformat]);
         end
         %
     end
@@ -672,7 +651,7 @@ if opt_user
     if (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(go_mask),2,'',[[str_dirout '/' str_nameout] '.omask_out.v' str_ver],['ocean mask out -- version ' str_ver]);
     else
-        imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.v' str_ver]'.' str_date '.' par_plotformat]);
+        figure; imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.v' str_ver]'.' str_date '.' par_plotformat]);
     end
     % calculate new fractional area
     [so_farea,so_farearef] = fun_grid_calc_ftotarea(go_mask,go_lone,go_late);
@@ -699,7 +678,7 @@ go_masknotnan(find(go_masknotnan == 0)) = 1;
 if (strcmp(par_plotformat,'pdf'))
     plot_2dgridded(flipud(go_mask),99999.0,'',[[str_dirout '/' str_nameout] '.omask_out.FINAL'],['ocean mask out -- FINAL version']);
 else
-    imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.FINAL']'.' str_date '.' par_plotformat]);
+    figure; imagesc(go_mask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.FINAL']'.' str_date '.' par_plotformat]);
 end
 %
 % save mask
@@ -753,7 +732,7 @@ if ( ~strcmp(str(1).gcm,'k1') || ~strcmp(str(1).gcm,'k2') )
     if (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(go_topo),99999.0,'',[[str_dirout '/' str_nameout] '.topo_out.RAW'],['topo out -- RAW']);
     else
-        imagesc(go_topo); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.topo_out.RAW']'.' str_date '.' par_plotformat]);
+        figure; imagesc(go_topo); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.topo_out.RAW']'.' str_date '.' par_plotformat]);
     end
 end
 %
@@ -777,7 +756,7 @@ go_k1(find(go_k1 < par_min_k)) = par_min_k;
 if (strcmp(par_plotformat,'pdf'))
     plot_2dgridded(flipud(go_k1),89.0,'',[[str_dirout '/' str_nameout] '.k1_out.RAW'],['k1 out -- RAW re-gridded']);
 else
-    imagesc(go_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.RAW']'.' str_date '.' par_plotformat]);
+    figure; imagesc(go_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.RAW']'.' str_date '.' par_plotformat]);
 end
 %
 % *** ADJUST TOPO -- AUTOMATIC BATHYMETRY FILTERING ********************* %
@@ -798,7 +777,7 @@ if (opt_filtertopo)
     elseif (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(go_k1),89.0,'',[[str_dirout '/' str_nameout] '.k1_out.FILTERED'],['k1 out -- auto filtered']);
     else
-        imagesc(go_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.FILTERED']'.' str_date '.' par_plotformat]);
+        figure; imagesc(go_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.FILTERED']'.' str_date '.' par_plotformat]);
     end
 end
 %
@@ -825,7 +804,7 @@ if (opt_user)
     elseif (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(go_k1),89.0,'',[str_dirout '/' str_nameout '.k1_out.USEREDITED'],['k1 out -- user edited version']);
     else
-        imagesc(go_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.USEREDITED']'.' str_date '.' par_plotformat]);
+        figure; imagesc(go_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.USEREDITED']'.' str_date '.' par_plotformat]);
     end
     % convert k-levels back to depth
     [go_topo] = fun_conv_k1(go_de,go_k1);
@@ -846,7 +825,7 @@ if (isempty(par_plotformat))
 elseif (strcmp(par_plotformat,'pdf'))
     plot_2dgridded(flipud(go_masknan.*go_topo),99999.0,'',[[str_dirout '/' str_nameout] '.topo_out.FINAL'],['topo out -- FINAL version']);
 else
-    imagesc(go_masknan.*go_topo); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.topo_out.FINAL']'.' str_date '.' par_plotformat]);
+    figure; imagesc(go_masknan.*go_topo); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.topo_out.FINAL']'.' str_date '.' par_plotformat]);
 end
 %
 % *** REPORT FINAL K1 *************************************************** %
@@ -861,7 +840,7 @@ if (isempty(par_plotformat))
 elseif (strcmp(par_plotformat,'pdf'))
     plot_2dgridded(flipud(go_masknan.*go_k1),89.0,'',[str_dirout '/' str_nameout '.k1_out.ocean.FINAL'],['k1 out -- FINAL ocean version']);
 else
-    imagesc(go_masknan.*go_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.ocean.FINAL']'.' str_date '.' par_plotformat]);
+    figure; imagesc(go_masknan.*go_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.ocean.FINAL']'.' str_date '.' par_plotformat]);
 end
 %
 % *** CALCULATE RUNOFF & COMPLETE k1 FILE ******************************* %
@@ -900,7 +879,7 @@ if (isempty(par_plotformat))
 elseif (strcmp(par_plotformat,'pdf'))
     plot_2dgridded(flipud(loc_k1),95.0,'',[str_dirout '/' str_nameout '.k1_out.RUNOFF'],['k1 out -- RUNOFF']);
 else
-    imagesc(loc_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.RUNOFF']'.' str_date '.' par_plotformat]);
+    figure; imagesc(loc_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.RUNOFF']'.' str_date '.' par_plotformat]);
 end
 % (vi) save .k1 file
 fprint_2DM(goex_k1(:,:),[],[[str_dirout '/' str_nameout] '.k1'],'%3i','%3i',true,false);
@@ -911,7 +890,7 @@ if (isempty(par_plotformat))
 elseif (strcmp(par_plotformat,'pdf'))
     plot_2dgridded(flipud(go_masknotnan.*go_k1),95.0,'',[str_dirout '/' str_nameout '.k1_out.land.FINAL'],['k1 out -- FINAL land version']);
 else
-    imagesc(go_masknotnan.*go_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.land.FINAL']'.' str_date '.' par_plotformat]);
+    figure; imagesc(go_masknotnan.*go_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.land.FINAL']'.' str_date '.' par_plotformat]);
 end
 %
 % *** IDENTIFY ISLANDS ************************************************** %
@@ -929,7 +908,7 @@ if opt_makegold
     elseif (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(go_islands),999,'',[[str_dirout '/' str_nameout] '.islnd_out.INIT'],['island out -- INITIAL']);
     else
-        imagesc(go_islands); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.islnd_out.INIT']'.' str_date '.' par_plotformat]);
+        figure; imagesc(go_islands); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.islnd_out.INIT']'.' str_date '.' par_plotformat]);
     end
     %
 end
@@ -952,7 +931,7 @@ if opt_makegold
     elseif (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(go_borders),99999.0,'',[[str_dirout '/' str_nameout] '.brds_out.INIT'],['borders out -- INITIAL']);
     else
-        imagesc(go_borders); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.brds_out.INIT']'.' str_date '.' par_plotformat]);
+        figure; imagesc(go_borders); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.brds_out.INIT']'.' str_date '.' par_plotformat]);
     end
     % (2) update islands count
     %     identify islands that are insufficiently seperated (and combined)
@@ -965,7 +944,7 @@ if opt_makegold
     elseif (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(go_islands),999,'',[[str_dirout '/' str_nameout] '.islnd_out.FINAL'],['islands out -- FINAL']);
     else
-        imagesc(go_islands); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.islnd_out.FINAL']'.' str_date '.' par_plotformat]);
+        figure; imagesc(go_islands); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.islnd_out.FINAL']'.' str_date '.' par_plotformat]);
     end
     % (3) number borders
     %     number borders as per bordering islands
@@ -975,7 +954,7 @@ if opt_makegold
     elseif (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(go_borders),999,'',[[str_dirout '/' str_nameout] '.brds_out.FILTERED'],['borders out -- FILTERED']);
     else
-        imagesc(go_borders); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.brds_out.FILTERED']'.' str_date '.' par_plotformat]);
+        figure; imagesc(go_borders); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.brds_out.FILTERED']'.' str_date '.' par_plotformat]);
     end
     % (5) user editing of borders
     if opt_user_borders
@@ -987,7 +966,7 @@ if opt_makegold
         elseif (strcmp(par_plotformat,'pdf'))
             plot_2dgridded(flipud(go_borders),999,'',[str_dirout '/' str_nameout '.brds_out.USEREDITED'],['borders out -- user edited version']);
         else
-            imagesc(go_borders); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.brds_out.USEREDITED']'.' str_date '.' par_plotformat]);
+            figure; imagesc(go_borders); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.brds_out.USEREDITED']'.' str_date '.' par_plotformat]);
         end
     end
     % plot final borders
@@ -996,7 +975,7 @@ if opt_makegold
     elseif (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(go_borders),999,'',[[str_dirout '/' str_nameout] '.brds_out.FINAL'],['borders out -- FINAL']);
     else
-        imagesc(go_borders); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.brds_out.FINAL']'.' str_date '.' par_plotformat]);
+        figure; imagesc(go_borders); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.brds_out.FINAL']'.' str_date '.' par_plotformat]);
     end
     %
 end
@@ -1016,7 +995,7 @@ if opt_makegold
     elseif (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(go_paths),999,'',[[str_dirout '/' str_nameout] '.paths_out'],['Paths file']);
     else
-        imagesc(go_paths); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.paths_out']'.' str_date '.' par_plotformat]);
+        figure; imagesc(go_paths); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.paths_out']'.' str_date '.' par_plotformat]);
     end
     % save .paths file
     fprint_paths(n_paths,v_paths,[[str_dirout '/' str_nameout] '.paths']);
@@ -1039,7 +1018,7 @@ if opt_makegold
     elseif (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(go_psiles),999,'',[[str_dirout '/' str_nameout] '.psiles_out'],['PSI islands file']);
     else
-        imagesc(go_psiles); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.psiles_out']'.' str_date '.' par_plotformat]);
+        figure; imagesc(go_psiles); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.psiles_out']'.' str_date '.' par_plotformat]);
     end
     % save .psiles file
     fprint_2DM(go_psiles(:,:),[],[[str_dirout '/' str_nameout] '.psiles'],'%3i','%3i',true,false);
@@ -1138,7 +1117,7 @@ if opt_makeseds
     elseif (strcmp(par_plotformat,'pdf'))
         plot_2dgridded(flipud(gos_topo),9999,'',[[str_dirout '/' str_nameout] '.sedtopo_out'],['Sediment topo']);
     else
-        imagesc(gos_topo); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.sedtopo_out']'.' str_date '.' par_plotformat]);
+        figure; imagesc(gos_topo); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.sedtopo_out']'.' str_date '.' par_plotformat]);
     end
     % save sediment topo
     fprint_2DM(gos_topo(:,:),[],[[str_dirout '/' str_nameout] '.depth.dat'],'%10.2f','%10.2f',true,false);
@@ -1188,13 +1167,13 @@ else
             % NOTE: the sets of grids and their edges required differ
             %       between hadcm3/hadcm3l and foam
             if (strcmp(str(1).gcm,'hadcm3') || strcmp(str(1).gcm,'hadcm3l'))
-                make_grid_winds_hadcm3x(gi_loncm,gi_lonce,gi_latcm,gi_latce,gi_lonpm,gi_lonpe,gi_latpm,gi_latpe,gi_mask,go_lonm,go_lone,go_latm,go_late,go_mask,str,opt_hiresplots);
+                make_grid_winds_hadcm3x(gi_loncm,gi_lonce,gi_latcm,gi_latce,gi_lonpm,gi_lonpe,gi_latpm,gi_latpe,gi_mask,go_lonm,go_lone,go_latm,go_late,go_mask,str,par_plotformat);
             elseif (strcmp(str(1).gcm,'foam'))
-                make_grid_winds_foam(gi_loncm,gi_lonce,gi_latcm,gi_latce,gi_lonam,gi_lonae,gi_latam,gi_latae,gi_mask,go_lonm,go_lone,go_latm,go_late,go_mask,str,opt_hiresplots);
+                make_grid_winds_foam(gi_loncm,gi_lonce,gi_latcm,gi_latce,gi_lonam,gi_lonae,gi_latam,gi_latae,gi_mask,go_lonm,go_lone,go_latm,go_late,go_mask,str,par_plotformat);
             elseif (strcmp(str(1).gcm,'cesm'))
-                make_grid_winds_cesm(gi_lonce,gi_latce,gi_mask,go_lonm,go_lone,go_latm,go_late,go_mask,str,opt_hiresplots);
+                make_grid_winds_cesm(gi_lonce,gi_latce,gi_mask,go_lonm,go_lone,go_latm,go_late,go_mask,str,par_plotformat);
             elseif (strcmp(str(1).gcm,'rockee'))
-                make_grid_winds_rockee(gi_lonam,gi_lonae,gi_latam,gi_latae,gi_mask,go_lonm,go_lone,go_latm,go_late,go_mask,str,opt_hiresplots);
+                make_grid_winds_rockee(gi_lonam,gi_lonae,gi_latam,gi_latae,gi_mask,go_lonm,go_lone,go_latm,go_late,go_mask,str,par_plotformat);
             end
             disp(['       - Re-grided GCM wind products.']);
         otherwise
@@ -1229,7 +1208,7 @@ if (~opt_makezonalalbedo)
             elseif (strcmp(par_plotformat,'pdf'))
                 plot_2dgridded(flipud(gi_albd),100.0,'',[[str_dirout '/' str_nameout] '.albd_pl_in'],['planetary albedo in']);
             else
-                imagesc(gi_albd); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_pl_in']'.' str_date '.' par_plotformat]);
+                figure; imagesc(gi_albd); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_pl_in']'.' str_date '.' par_plotformat]);
             end
         otherwise
             disp(['         (Nothing to load.)']);
@@ -1258,7 +1237,7 @@ if (~opt_makezonalalbedo)
             elseif (strcmp(par_plotformat,'pdf'))
                 plot_2dgridded(flipud(go_albd),100.0,'',[[str_dirout '/' str_nameout] '.albd_pl_out'],['albedo out']);
             else
-                imagesc(go_albd); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_pl_out']'.' str_date '.' par_plotformat]);
+                figure; imagesc(go_albd); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_pl_out']'.' str_date '.' par_plotformat]);
             end
             % save 2D file
             fprint_2DM(go_albd(:,:),[],[[str_dirout '/' str_nameout] '.2Dalbd_pl.dat'],'%8.4f','%8.4f',true,false);
@@ -1330,8 +1309,8 @@ if opt_makeents
                 plot_2dgridded(flipud(gi_albd_sur),100.0,'',[[str_dirout '/' str_nameout] '.albd_sur_in'],['surface albedo in']);
                 plot_2dgridded(flipud(gi_albd_cl),100.0,'',[[str_dirout '/' str_nameout] '.albd_cl_in'],['cloud albedo in']);
             else
-                imagesc(gi_albd_sur); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_sur_in']'.' str_date '.' par_plotformat]);
-                imagesc(gi_albd_cl); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_cl_in']'.' str_date '.' par_plotformat]);
+                figure; imagesc(gi_albd_sur); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_sur_in']'.' str_date '.' par_plotformat]);
+                figure; imagesc(gi_albd_cl); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_cl_in']'.' str_date '.' par_plotformat]);
             end
     end
     %
@@ -1356,8 +1335,8 @@ if opt_makeents
                 plot_2dgridded(flipud(go_albd_sur),100.0,'',[[str_dirout '/' str_nameout] '.albd_sur_out'],['surface albedo out']);
                 plot_2dgridded(flipud(go_albd_cl),100.0,'',[[str_dirout '/' str_nameout] '.albd_cl_out'],['cloud albedo out']);
             else
-                imagesc(go_albd_sur); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_sur_out']'.' str_date '.' par_plotformat]);
-                imagesc(go_albd_cl); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_cl_out']'.' str_date '.' par_plotformat]);
+                figure; imagesc(go_albd_sur); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_sur_out']'.' str_date '.' par_plotformat]);
+                figure; imagesc(go_albd_cl); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.albd_cl_out']'.' str_date '.' par_plotformat]);
             end
             % save 2D file
             fprint_2DM(go_albd_sur(:,:),[],[[str_dirout '/' str_nameout] '.2Dalbd_sur.dat'],'%8.4f','%8.4f',true,false);
@@ -1429,8 +1408,8 @@ if opt_makeents
                 plot_2dgridded(flipud(gi_imask),2.0,'',[[str_dirout '/' str_nameout] '.imask_in'],['mask in']);
                 plot_2dgridded(flipud(gi_orog),6000.0,'',[[str_dirout '/' str_nameout] '.orog_in'],['topo in']);
             else
-                imagesc(gi_imask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.imask_in']'.' str_date '.' par_plotformat]);
-                imagesc(gi_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_in']'.' str_date '.' par_plotformat]);
+                figure; imagesc(gi_imask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.imask_in']'.' str_date '.' par_plotformat]);
+                figure; imagesc(gi_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_in']'.' str_date '.' par_plotformat]);
             end
         case {'foam'}
             % icemask not available as input for FOAM
@@ -1443,7 +1422,7 @@ if opt_makeents
             elseif (strcmp(par_plotformat,'pdf'))
                 plot_2dgridded(flipud(gi_orog),6000.0,'',[[str_dirout '/' str_nameout] '.orog_in'],['topo in']);
             else
-                imagesc(gi_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_in']'.' str_date '.' par_plotformat]);
+                figure; imagesc(gi_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_in']'.' str_date '.' par_plotformat]);
             end
         otherwise
             disp(['         (Nothing to load.)']);
@@ -1474,7 +1453,7 @@ if opt_makeents
             elseif (strcmp(par_plotformat,'pdf'))
                 plot_2dgridded(flipud(go_imask),99999.0,'',[[str_dirout '/' str_nameout] '.imask_out.RAW'],['Ice mask out -- RAW']);
             else
-                imagesc(go_imask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.imask_out.RAW']'.' str_date '.' par_plotformat]);
+                figure; imagesc(go_imask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.imask_out.RAW']'.' str_date '.' par_plotformat]);
             end
             fprint_2DM(go_imask(:,:),[],[[str_dirout '/' str_nameout] '.imask_out.RAW.dat'],'%4.1f','%4.1f',true,false);
             % apply FINAL land-sea mask (no icesheet (==0) over ocean)
@@ -1493,7 +1472,7 @@ if opt_makeents
             elseif (strcmp(par_plotformat,'pdf'))
                 plot_2dgridded(flipud(go_orog),99999.0,'',[[str_dirout '/' str_nameout] '.orog_out.RAW'],['Orography out -- RAW']);
             else
-                imagesc(go_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_out.RAW']'.' str_date '.' par_plotformat]);
+                figure; imagesc(go_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_out.RAW']'.' str_date '.' par_plotformat]);
             end
             fprint_2DM(go_orog(:,:),1-go_mask(:,:),[[str_dirout '/' str_nameout] '.orog_out.RAW.dat'],'%10.2f','%10i',true,true);
             % apply FINAL land-sea mask
@@ -1514,7 +1493,7 @@ if opt_makeents
             elseif (strcmp(par_plotformat,'pdf'))
                 plot_2dgridded(flipud(go_orog),99999.0,'',[[str_dirout '/' str_nameout] '.orog_out.FINAL'],['Orography out -- FINAL version']);
             else
-                imagesc(go_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_out.FINAL']'.' str_date '.' par_plotformat]);
+                figure; imagesc(go_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_out.FINAL']'.' str_date '.' par_plotformat]);
             end
             % create and save combined ENTS mask
             % NOTE: Ocean = 0; Land = 1; Ice sheet = 2
@@ -1529,7 +1508,7 @@ if opt_makeents
             elseif (strcmp(par_plotformat,'pdf'))
                 plot_2dgridded(flipud(go_licemask),99999.0,'',[[str_dirout '/' str_nameout] '.licemask_out.FINAL'],['Land-ice mask out -- FINAL version']);
             else
-                imagesc(go_licemask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.licemask_out.FINAL']'.' str_date '.' par_plotformat]);
+                figure; imagesc(go_licemask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.licemask_out.FINAL']'.' str_date '.' par_plotformat]);
             end
         case {'foam'}
             % generate ice-free land-ice mask
@@ -1542,7 +1521,7 @@ if opt_makeents
             elseif (strcmp(par_plotformat,'pdf'))
                 plot_2dgridded(flipud(go_licemask),99999.0,'',[[str_dirout '/' str_nameout] '.licemask_out.FINAL'],['Land-ice mask out -- FINAL version']);
             else
-                imagesc(go_licemask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.licemask_out.FINAL']'.' str_date '.' par_plotformat]);
+                figure; imagesc(go_licemask); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.licemask_out.FINAL']'.' str_date '.' par_plotformat]);
             end
             % orography
             [go_orog,go_tmp] = make_regrid_2d(gi_lonce,gi_latce,gi_orog',go_lone,go_late,opt_debug);
@@ -1554,7 +1533,7 @@ if opt_makeents
             elseif (strcmp(par_plotformat,'pdf'))
                 plot_2dgridded(flipud(go_orog),99999.0,'',[[str_dirout '/' str_nameout] '.orog_out.RAW'],['Orography out -- RAW']);
             else
-                imagesc(go_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_out.RAW']'.' str_date '.' par_plotformat]);
+                figure; imagesc(go_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_out.RAW']'.' str_date '.' par_plotformat]);
             end
             fprint_2DM(go_orog(:,:),1-go_mask(:,:),[[str_dirout '/' str_nameout] '.orog_out.RAW.dat'],'%10.2f','%10i',true,true);
             % apply FINAL land-sea mask
@@ -1575,7 +1554,7 @@ if opt_makeents
             elseif (strcmp(par_plotformat,'pdf'))
                 plot_2dgridded(flipud(go_orog),99999.0,'',[[str_dirout '/' str_nameout] '.orog_out.FINAL'],['Orography out -- FINAL version']);
             else
-                imagesc(go_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_out.FINAL']'.' str_date '.' par_plotformat]);
+                figure; imagesc(go_orog); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.orog_out.FINAL']'.' str_date '.' par_plotformat]);
             end
         otherwise
             % generate flat orography at 840 m ==> mean modern land elevation
