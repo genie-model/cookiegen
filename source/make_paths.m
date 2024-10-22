@@ -223,7 +223,6 @@ if (n_islands >= 2)
                     break;
                 end % end if
             end % end s loop
-
             if ~follow
                 % at this point, no progress on un-searched path is possible
                 % => find first search cell -- this should be the START ...
@@ -255,9 +254,10 @@ if (n_islands >= 2)
                             end
                             %
                             if isempty(loc_v_path)
-                                disp([' *** There is a very very very sad issue somehow :( ']);
+                                disp([' *** The path cannot be completed around border #' num2str(islnd) ' :( Please edit manually. [set opt_user_borders=true]']);
                                 disp([' ']);
                                 diary off;
+                                error(['Error. \nFailed to complete path loop @ (',num2str(loc_i),',',num2str(jmax-loc_j+1),'): %s'],'Exiting ...');
                                 return;
                             end
                         end
@@ -293,17 +293,14 @@ if (n_islands >= 2)
                         end
                         % continue ...
                         follow = true;
+                        % report action
+                        disp(['         -> Path interval removed of length: ' num2str(loc_nmax-n+2) ' from border #' num2str(islnd) ' / returning to: (' num2str(loc_i-1) ',' num2str(jmax-(loc_j-1)+1) ')']);
                         % exit (s) loop
                         break;
                     end
                 end
             end
-
         end % end follow while
-
-
-
-
         % add final location, calculate direction to start, update count
         % NOTE: take into account upside-down GENIE array MATLAB indexing
         % reminder:
@@ -323,7 +320,7 @@ if (n_islands >= 2)
             disp([' *** There is a sad issue somehow :( ']);
             disp([' ']);
             diary off;
-            error(['Error. \nFailed to complete path loop @ (',num2str(loc_i),',',num2str(jmax-loc_j+1),'): %s'],'Exiting ...');
+            error(['Error. \nFailed to complete path loop @ (',num2str(loc_i-1),',',num2str(jmax-(loc_j-1)+1),'): %s'],'Exiting ...');
             return;
         end
         %

@@ -1,4 +1,4 @@
-function [grid_borders,cell_borders]  = find_grid_borders_init(grid_mask)
+function [grid_borders]  = find_grid_borders_init(grid_mask)
 %
 %%
 
@@ -25,20 +25,19 @@ end
 % add a border to any remaining S pole bordering ocean cells 
 % (and not already adjacent to land)
 for i = 1:imax
-    if gm(jmax,i) && gm(jmax-1,i),
+    if gm(jmax,i) && gm(jmax-1,i)
         gbrdrs(jmax,i) = 1;
     end
 end
 % add a border to any remaining N pole bordering ocean cells
 % (and not already adjacent to land)
 for i = 1:imax
-    if gm(1,i) && gm(2,i),
+    if gm(1,i) && gm(2,i)
         gbrdrs(1,i) = 1;
     end
 end
-% return array + cell
+% return array
 grid_borders = gbrdrs;
-cell_borders = cell([jmax imax]);
 %
 % *********************************************************************** %
 % *** END *************************************************************** %

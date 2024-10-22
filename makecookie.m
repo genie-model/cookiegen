@@ -95,15 +95,20 @@ if ~exist('par_mask_mask_name','var'), par_mask_mask_name = ''; end
 if ~exist('opt_filtermask','var'), opt_filtermask=true; end
 % [false/true] filter topography?
 if ~exist('opt_filtertopo','var'), opt_filtertopo=true; end
-% [false/true] force wide polar island zone
-if ~exist('opt_makepoleswide','var'), opt_makepoleswide=true; end
 % [0-9999] minimum lake size (# cells)
 if ~exist('par_min_oceann','var'), par_min_oceann=20; end
 %
-% [0/1/2] zonal windstress generation option
-if ~exist('par_tauopt','var'), par_tauopt=0; end
+% [0/1/2/3] zonal windstress generation option
+% #0 == automatically determine best choice for each hemispheres
+% #1 == land world (modern NH / paleo Eocene (both hemispheres))
+% #2 == water world (hi lat ocean gateway in both hemispheres))
+% #3 == grey world (mean of land-blocked and hi lat ocean gateway)
+if ~exist('par_tauopt','var'), par_tauopt=3; end
 % [false/true] use random runoff scheme
 if ~exist('opt_makerndrunoff','var'), opt_makerndrunoff=false; end
+%
+% [false/true] create 2x res sediment grid
+if ~exist('opt_makehighresseds','var'), opt_makehighresseds=false; end
 % minimm (random, option 2) sediment depth
 if ~exist('par_sed_Dmin','var'), par_sed_Dmin=1000.0; end
 % maximum (random, option 2) sediment depth
@@ -923,12 +928,12 @@ if opt_makegold
     n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. UPDATING ISLANDS & PATHS ...']);
     if (opt_debug), input('Press return to CONTINUE ...'); end
-    % NOTE: generate all possible paths initially (and filter later)
     % (1) generate generic borders around all (initial) islands
     %     NOTE: co_borders is the cell array equivalent of go_borders
-    %           but which is initiall created as an array of empty matrices
-    %%%[go_borders] = find_grid_borders(go_mask);
-    [go_borders,co_borders] = find_grid_borders_init(go_mask);
+    %           but which is initially created as an array of empty matrices
+    % NOTE: generate all possible paths initially (and filter later)
+    [go_borders] = find_grid_borders_init(go_mask);
+    co_borders = cell([jmax imax]);
     if (isempty(par_plotformat))
         %
     elseif (strcmp(par_plotformat,'pdf'))
@@ -937,11 +942,10 @@ if opt_makegold
         figure; imagesc(go_borders); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.brds_out.INIT']'.' str_date '.' par_plotformat]);
     end
     % (2) update islands count
-    %     identify islands that are insufficiently seperated (and combined)
+    %     identify islands that are insufficiently seperated (and combined\)
     %     identify polar islands
     %     re-number all
-    %%%[go_islands,n_islands,i_islands,i_poles] = find_grid_islands_update(go_islands,n_islands,i_islands,go_borders,opt_makepoleswide);
-    [go_islands,n_islands,i_islands,i_poles] = find_grid_islands_polar(go_islands,n_islands,i_islands,go_borders,opt_makepoleswide);
+    [go_islands,n_islands,i_islands,i_poles] = find_grid_islands_update(go_islands,n_islands,i_islands,go_borders);
     if (isempty(par_plotformat))
         %
     elseif (strcmp(par_plotformat,'pdf'))
@@ -959,7 +963,7 @@ if opt_makegold
     else
         figure; imagesc(go_borders); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.brds_out.FILTERED']'.' str_date '.' par_plotformat]);
     end
-    % (5) user editing of borders
+    % (4) user editing of borders
     if opt_user_borders
         % user-editing! what can go wrong?
         [go_borders] = fun_grid_edit_borders(go_borders,go_mask);

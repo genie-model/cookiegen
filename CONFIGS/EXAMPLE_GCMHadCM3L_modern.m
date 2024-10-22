@@ -16,7 +16,7 @@ par_age=0.0;                   % [0.0-4570.0] optional age (Myr)
 par_pathin='INPUT';            % ['STRING'] path to input dir
 par_pathout='OUTPUT';          % ['STRING'] path to output dir
 par_plotformat='png';          % 'png' ,'jpg','pdf' (high res), '' for NONE
-opt_user=false;                % [false/true] force user input to grid
+opt_user=true;                % [false/true] force user input to grid
 %
 % *** GRID -- HORIZONTAL ************************************************ %
 %
@@ -43,6 +43,5 @@ opt_makeents=false;            % [false/true] make ENTS files?
 opt_makezonalwind=false;      % [false/true] generate zonal winds
 opt_makezonalalbedo=false;    % [false/true] generate zonal average albedo
 opt_makerndseds=false;        % [false/true] generate randomised sed depths
-opt_makehighresseds=false;    % [false/true] create 2x res sediment grid
 %
 % *********************************************************************** %

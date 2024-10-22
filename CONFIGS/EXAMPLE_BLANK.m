@@ -43,6 +43,5 @@ opt_makeents=false;            % [false/true] make ENTS files?
 opt_makezonalwind=true;       % [false/true] generate zonal winds
 opt_makezonalalbedo=true;     % [false/true] generate zonal average albedo
 opt_makerndseds=false;        % [false/true] generate randomised sed depths
-opt_makehighresseds=false;    % [false/true] create 2x res sediment grid
 %
 % *********************************************************************** %

@@ -6,8 +6,6 @@ function [grid_islands,n_islands,i_islands,i_poles]  = find_grid_islands_polar(g
 % *** UPDATE THE ISLANDS COUNT ****************************************** %
 % *********************************************************************** %
 %
-% *** INITIALIZE ******************************************************** %
-%
 % determine mask size (remember: [rows columns])
 [jmax, imax] = size(grid_islands);
 % create search array
@@ -23,6 +21,51 @@ gi_ex = [gi_ex(:,end) gi_ex gi_ex(:,1)];
 gi_ex = [gi_ex(1,:); gi_ex; gi_ex(end,:)];
 gi_ex(1,:)   = 0.0;
 gi_ex(end,:) = 0.0;
+% ADJACENT ISLANDS AWAY FROM POLES
+isearch  = true;
+ireplace = false;
+while isearch
+    % search across grid
+    for i = 2:imax+1
+        for j = 2:jmax+1
+            % set results vector empty
+            isrch = [];
+            % test for cell being a border
+            if gb_ex(j,i)
+                % search surrounding cells
+                for s = 1:8
+                    loc_j = j + vdsrch(s,1);
+                    loc_i = i + vdsrch(s,2);
+                    if gi_ex(loc_j,loc_i) > 0,
+                        isrch = [isrch; gi_ex(loc_j,loc_i)];
+                    end
+                end
+            end
+            % test for > 1 different island adjacent to border cell
+            if (length(isrch) > 0) && (min(isrch) ~= max(isrch))
+                ireplace = true;
+            end
+            if ireplace, break; end
+        end
+        if ireplace, break; end
+    end
+    % test for:
+    % island re-numbering required
+    % or no further changes after grid search complete
+    if ireplace,
+        % update island numbering in  original and expanded islands grids
+        gi_ex(find(gi_ex == max(isrch))) = min(isrch);
+        grid_islands(find(grid_islands == max(isrch))) = min(isrch);
+        % update island numbers list
+        i_islands(find(i_islands == max(isrch))) = [];
+        % update islands count
+        n_islands = n_islands - 1;
+        % reset islands replacement flag
+        ireplace = false;
+    else
+        isearch = false;
+    end
+end
 %
 % *** INDENTIFY ISLANDS CONNECTED TO POLES ****************************** %
 %
@@ -53,6 +96,40 @@ for i = 1:imax
     elseif (grid_islands(jmax,i) == -1)
         % create a special index ...
         grid_islands(find(grid_islands == -1)) = -3;
+    end
+end
+%
+% *** INDENTIFY ISLANDS POORLY SEPERATED FROM POLES ********************* %
+%
+if opt_makepoleswide,
+    % relax criteria for grid cells bring part of a polar island
+    % => this counts islands seperated by an ocean grid point from 
+    %    either poles, as polar
+    % search next nearest N polar row
+    for i = 1:imax
+        % test for cell being a N island cell
+        if (grid_islands(2,i) > 0)
+            % update island numbers list
+            % (do this before replacing the critical number in question  ...)
+            i_islands(find(i_islands == grid_islands(2,i))) = [];
+            % update islands count
+            n_islands = n_islands - 1;
+            % replace island number
+            grid_islands(find(grid_islands == grid_islands(2,i))) = -1;
+        end
+    end
+    % search next nearest S polar row
+    for i = 1:imax
+        % test for cell being a N island cell
+        if (grid_islands(jmax-1,i) > 0)
+            % update island numbers list
+            % (do this before replacing the critical number in question  ...)
+            i_islands(find(i_islands == grid_islands(jmax-1,i))) = [];
+            % update islands count
+            n_islands = n_islands - 1;
+            % replace island number
+            grid_islands(find(grid_islands == grid_islands(jmax-1,i))) = -2;
+        end
     end
 end
 %
