@@ -55,14 +55,20 @@ switch par_tauopt
         % land world (modern NH / paleo Eocene (both hemispheres))
         loc_nswl(1:2) = 'nl';
         loc_nswl(3:4) = 'sl';
+        % report action
+        disp(['         -> Zonal wind stress profile to be generated consistent with land barriers in both hemisphere.']);
     case {2}
         % water world
         loc_nswl(1:2) = 'nw';
         loc_nswl(3:4) = 'sw';
+        % report action
+        disp(['         -> Zonal wind stress profile to be generated consistent with no barriers in eithher hemisphere.']);
     case {3}
         % grey world
         loc_nswl(1:2) = 'ng';
         loc_nswl(3:4) = 'sg';
+        % report action
+        disp(['         -> An intermediate (between having land and no land barriers) strength zonal wind stress profile will be generated.']);
     otherwise
         % automatically determine water/land options
         % NOTE: any zeros present in mask == non-ocean => land present
@@ -73,6 +79,8 @@ switch par_tauopt
         vo_latm = fliplr(go_latm);
         lat_thrsh = 40.0;
         vo_mask  = mean(go_mask');
+        % report action
+        disp(['         -> cookiegen will very crudely try and identify the presence of high latitude ocean gateways and set a corresponding wind stress profile.']);
         % N
         if max(vo_mask(find(vo_latm > lat_thrsh))) < 1.0
             loc_nswl(1:2) = 'nl';
