@@ -9,6 +9,7 @@
 par_wor_name='worblank';       % ['STRING'] 8-char (output) config name
 par_gcm='';                    % ['STRING'] input format/GCM name
 par_expid='';                  % ['STRING'] input experiment/data name
+par_baseconfig='TEMPLATE.16lvlCONFIG';             % ['STRING'] optional template base-config
 par_age=0.0;                   % [0.0-4570.0] optional age (Myr)
 %
 % *** INPUT + OUTPUT SETTINGS ******************************************* %

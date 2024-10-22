@@ -9,6 +9,7 @@
 par_wor_name='wordrake';       % ['STRING'] 8-char (output) config name
 par_gcm='mask';                % ['STRING'] input format/GCM name
 par_expid='wordrake';          % ['STRING'] input experiment/data name
+par_cfgid='CONFIG.16lvl';      % ['STRING'] optional template base-config
 par_age=0.0;                   % [0.0-4570.0] optional age (Myr)
 %
 % *** INPUT + OUTPUT SETTINGS ******************************************* %

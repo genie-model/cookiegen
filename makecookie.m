@@ -97,6 +97,8 @@ if ~exist('opt_filtermask','var'), opt_filtermask=true; end
 if ~exist('opt_filtertopo','var'), opt_filtertopo=true; end
 % [0-9999] minimum lake size (# cells)
 if ~exist('par_min_oceann','var'), par_min_oceann=20; end
+% [false/true] edit borders?
+if ~exist('opt_user_borders','var'), opt_user_borders=false; end
 %
 % [0/1/2/3] zonal windstress generation option
 % #0 == automatically determine best choice for each hemispheres
@@ -118,8 +120,8 @@ if ~exist('par_sed_Dmax','var'), par_sed_Dmax=6000.0; end
 if ~exist('opt_outputdir','var'), opt_outputdir=false; end
 % [false/true] debug output?
 if ~exist('opt_debug','var'), opt_debug=false; end
-% [false/true] edit borders?
-if ~exist('opt_user_borders','var'), opt_user_borders=false; end
+% ['STRING'] templarte base-config name (optional)
+if ~exist('par_cfgid','var'), par_cfgid=''; end
 %
 % *** cookiegen derived user settings *********************************** %
 %
@@ -1806,6 +1808,56 @@ end
 fprintf(fid,'%s\n','##################################################################################');
 fclose(fid);
 fprintf('       - .config file saved\n')
+%
+% *** APPEND CONFIG FILE TO TEMPLATE BASE-CONFIG ************************ %
+%
+% NOTE: for the terminally lazy user for Xmas ...
+%
+if (~isempty(par_cfgid))
+    %
+    n_step = n_step+1;
+    disp(['>  ' num2str(n_step) '. GENERATING BASE-CONFIG FILE ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
+    %
+    % first check that template base-config file exists ...
+    if (exist([par_cfgid '.dat'], 'file') ~= 2)
+        disp(['       * ERROR: Template base-config filename ( ' par_cfgid '.dat) cannot be found.']);
+        disp(['--------------------------------------------------------']);
+        disp([' ']);
+        diary off;
+        return;
+    end
+    % copy template
+    str_templatefilein  = [par_cfgid '.dat'];
+    str_templatefileout = ['cookie.C.' par_wor_name '.NONE.config'];
+    copyfile([pwd '/' 'DATA' '/' str_templatefilein],[pwd '/' par_pathout '/' str_templatefileout],'f');
+
+    % find and get contents of parameter file just created
+    loc_file = [str_dirout '/' 'config_' str_date '.txt'];
+    loc_parameters = fileread(loc_file);
+    loc_parameters = regexp(loc_parameters, '\n', 'split');
+    loc_n_lines = length(loc_parameters);
+    % open sesame! (file pipe of copied template base-config)
+    fid = fopen([pwd '/' par_pathout '/' str_templatefileout], 'a+');
+    % write parameter file header info
+    loc_str = '# ';
+    fprintf(fid, '%s\n', loc_str);
+    loc_str = '# --- appended by MATLAB with love :) --------------------------------';
+    fprintf(fid, '%s\n', loc_str);
+    loc_str = '# ';
+    fprintf(fid, '%s\n', loc_str);
+    % write config parameters -- loop through all parameters
+    loc_str = '# > cookiegen parameter values';
+    fprintf(fid, '%s\n', loc_str);
+    loc_str = '# ';
+    fprintf(fid, '%s\n', loc_str);
+    for l=1:loc_n_lines
+        fprintf(fid, '%s\n', loc_parameters{l});
+    end
+    % close file pipe of now config parameter-populated base-config
+    fclose(fid);
+    fprintf('       - .config file saved\n')
+end
 %
 % *********************************************************************** %
 
