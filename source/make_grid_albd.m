@@ -32,6 +32,8 @@ if (par_age == 0.0)
     atmalbedo_offset = 0.17;
     atmalbedo_amp    = 0.18;
     atmalbedo_mod    = 0.30;
+    % report action
+    disp(['         -> Zonal albedo profiles generated consistent with ' num2str(par_age) ' Ma (modern).']);
 else
     % assume ice-free
     % NOTE: this is the Ridgwell and Schmidt [2010] early Eocene profile
@@ -43,6 +45,8 @@ else
     atmalbedo_offset = 0.16;
     atmalbedo_amp    = 0.18;
     atmalbedo_mod    = 0.36;
+    % report action
+    disp(['         -> Zonal albedo profiles generated consistent with ' num2str(par_age) ' Ma (assumed early Eocene characteristics).']);
 end
 % calculate the albedo profile itself
 for j = 1:jmax

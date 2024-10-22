@@ -29,9 +29,9 @@ switch str(1).gcm
         end
     case ('mask')
         if isempty(str(1).path),
-            loc_str_file = [str(1).exp '.dat'];
+            loc_str_file = [str(1).exp '.txt'];
         else
-            loc_str_file = [str(1).path '/' str(1).exp '.dat'];
+            loc_str_file = [str(1).path '/' str(1).exp '.txt'];
         end
     otherwise
         disp(['       ERROR: Impossible error!']);

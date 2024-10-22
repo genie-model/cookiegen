@@ -153,6 +153,8 @@ if strcmp(par_gcm,'K2'),      par_gcm = 'k2';      end
 if strcmp(par_gcm,'MASK'),    par_gcm = 'mask';    end
 if strcmp(par_gcm,'dat'),     par_gcm = 'mask';    end
 if strcmp(par_gcm,'.dat'),    par_gcm = 'mask';    end
+if strcmp(par_gcm,'txt'),     par_gcm = 'mask';    end
+if strcmp(par_gcm,'.txt'),    par_gcm = 'mask';    end
 if strcmp(par_gcm,'.mat'),    par_gcm = 'mat';     end
 if strcmp(par_gcm,'.MAT'),    par_gcm = 'mat';     end
 if strcmp(par_gcm,''),        par_gcm = 'blank';   end
@@ -857,14 +859,17 @@ if (opt_debug), input('Press return to CONTINUE ...'); end
 % NOTE: ordering is a little illogical becasue
 %       make_grid_runoff_rnd requires the extended grid, while
 %       make_grid_runoff_roof is easier done without ...
-% (i) create roofing runoff scheme
-%      NOTE: filter for all ocean
+%
+% (A) create roofing runoff scheme
+% NOTE: existing runoff information will be retained ... 
+%       values of '90' will indicate run-off needs to be re-generated
 if ( ~opt_makerndrunoff && (max(go_k1,[],"all") >= 90) )
     [go_k1] = make_grid_runoff_roof(go_mask,go_k1,str);
+    % create simplified k1 grid value scale for plotting
     loc_k1 = go_k1;
     loc_k1(find(loc_k1 < 91)) = 95;
 end
-% (ii) extend k1 grid
+% extend k1 grid
 % NOTE: mark first row: maxk+1, last as maxk+2
 %       (so, slightly different from standard/original GENIE format)
 goex_k1 = go_k1;
@@ -873,13 +878,17 @@ goex_k1(1,:) = kmax+1;
 goex_k1(end,:) = kmax+2;
 % add buffer columns for E-W wall
 goex_k1 = [goex_k1(:,end) goex_k1 goex_k1(:,1)];
-% (iii) create random runoff grid (if selected)
+%
+% (B) create random runoff grid (if selected)
 if ( opt_makerndrunoff && (max(go_k1,[],"all") >= 90) )
     [goex_k1] = make_grid_runoff_rnd(goex_k1,str,opt_debug);
+    % create simplified k1 grid value scale for plotting
     loc_k1 = goex_k1(2:end-1,2:end-1);
     loc_k1(find(loc_k1 < 91)) = 95;
 end
-% (iv) plot
+%
+% PLOT & SAVE
+% plot runoff
 if (max(go_k1,[],"all") >= 90)
     if (isempty(par_plotformat))
         %
@@ -889,7 +898,7 @@ if (max(go_k1,[],"all") >= 90)
         figure; imagesc(loc_k1); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.RUNOFF']'.' str_date '.' par_plotformat]);
     end
 end
-% (v) save .k1 file
+% save final land k1
 fprint_2DM(goex_k1(:,:),[],[[str_dirout '/' str_nameout] '.k1'],'%3i','%3i',true,false);
 fprintf('       - .k1 file saved\n')
 % plot final land k1
