@@ -12,12 +12,12 @@ function [grid_cells]  = find_grid_4cells(grid_mask)
 [jmax imax] = size(grid_mask);
 gc = zeros(jmax,imax);
 % add boundaries to mask
-% NOTE: assign poles as land (== 0) -- !!! OCEAN IN muffingen !!!
+% NOTE: assign poles as ocean (== 1)
 gm = grid_mask;
 gm = [gm(:,end) gm gm(:,1)];
 gm = [gm(1,:); gm; gm(end,:)];
-gm(1,:)   = 0.0;
-gm(end,:) = 0.0;
+gm(1,:)   = 1.0;
+gm(end,:) = 1.0;
 % search across inner, *original* grid
 for i = 2:imax+1
     for j = 2:jmax+1
