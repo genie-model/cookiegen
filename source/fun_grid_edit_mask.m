@@ -29,13 +29,13 @@ cmap = [0.5 1 0.5; 0.5 0.5 1];
 %
 flag = 0;
 while flag == 0
-    figure(1); clf
+    figure;
     colormap(cmap);
     pcolor (flipud(gm_ex)); axis image;
-    caxis ([-0.5 1.5]); h = colorbar ('horiz');
+    clim([-0.5 1.5]); h = colorbar ('horiz');
     %set(h,'XTick',0:1,'XTickLabel',cbartxt);
     set(h,'XTick',0:1);
-    title ('Ocean land/sea mask');
+    title ('Ocean land/sea mask: 0==land, 1==ocean');
     [x,y,button] = ginput(1);
     ix = floor(x); iy = floor(y);
     if ix < 1 | ix > imax | iy < 1 | iy > jmax

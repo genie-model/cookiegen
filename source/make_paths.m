@@ -1,4 +1,4 @@
-function [n_paths,v_paths,n_islands,grid_paths] = make_paths(cell_borders,n_islands,i_poles);
+function [n_paths,v_paths,n_islands,grid_paths] = make_paths(cell_borders,n_islands,i_poles)
 %
 %%
 
@@ -143,10 +143,11 @@ if (n_islands >= 2)
         n_path = 1;
         % now follow path around island -- clockwise
         % NOTE: for an island connected to the N pole, the direction
-        %       will be ANTICLOCKWISE (island on left) 
+        %       should be ANTICLOCKWISE (island on left) ... (TO-DO?)
         follow = true;
+        %
         while follow
-            % search surrounding cells ... 
+            % search surrounding cells ...
             % ... find adajacent, unmarked border cell
             % => if no unmarked border cells exist, finish ...
             %    ... but ONLY if the marked border cell is the start
@@ -164,7 +165,7 @@ if (n_islands >= 2)
                 if (gbn_ex(loc_jj,loc_ii,islnd) == islnd) && ~gsn_ex(loc_jj,loc_ii,islnd)
                     % record:
                     % *** current location ***
-                    % AND 
+                    % AND
                     % *** direction to next cell ***
                     % directions: 1==S, 2==E, 3==N, 4==W
                     % GOLDSTEIN path notation reminder:
@@ -225,80 +226,80 @@ if (n_islands >= 2)
             end % end s loop
             if ~follow
                 % at this point, no progress on un-searched path is possible
-                % => find first search cell -- this should be the START ...
-                % ... ...
-                %
-                % find FIRST border cell that is current border AND unmarked
+                % => find initial search cell -- this should be path START
+                % ... OTHERWISE ...
+                % we are stuck:
+                % we need to re-wind the path until an 'exit' is found
                 % NOTE: remember (i,j) is START location on the extended grid
                 % NOTE: loc_s is not adjusted when the path search draws a blank
+                loc_exit = false;
                 for s = loc_s-1:loc_s+2
                     loc_jj = loc_j + vdsrch_ex(s,1);
                     loc_ii = loc_i + vdsrch_ex(s,2);
-                    if (gbn_ex(loc_jj,loc_ii,islnd) == islnd) && gsn_ex(loc_jj,loc_ii,islnd)
-                        if ((loc_jj == j) && ((loc_ii == i) || (loc_ii-imax == i)))
-                            % start cell found -- true end of path!
-                            % exit (s) loop
-                            break;
-                        else
-                            % doubling back situation ... :(
-                            % find last time this cell was serched
-                            % NOTE: n_path is the local (current) path legnth
-                            %       v_paths contains all path elements + 1
-                            loc_v_path = [];
-                            [loc_nmax tmp] = size(v_paths);
-                            for n=[loc_nmax:-1:loc_nmax-n_path]
-                                if (v_paths(n,2) == loc_ii-1) && (v_paths(n,3) == loc_jj-1)
-                                    loc_v_path = v_paths(n,:);
-                                    break; % exit (n) loop
-                                end
-                            end
-                            %
-                            if isempty(loc_v_path)
-                                disp([' *** The path cannot be completed around border #' num2str(islnd) ' :( Please edit manually. [set opt_user_borders=true]']);
-                                disp([' ']);
-                                diary off;
-                                error(['Error. \nFailed to complete path loop @ (',num2str(loc_i),',',num2str(jmax-loc_j+1),'): %s'],'Exiting ...');
-                                return;
-                            end
-                        end
-                        % move (return) to duplicate cell location
-                        % and test for E-W wall
-                        loc_i = v_paths(n,2) + 1;
-                        loc_j = v_paths(n,3) + 1;
-                        if (loc_ii == 1)
-                            loc_i = imax+1;
-                        elseif (loc_ii == imax+2)
-                            loc_i = 2;
-                        end
-                        % remove path back to and including dup cell
-                        v_paths(n:loc_nmax,:) = [];
-                        % update path length
-                        n_path = n_path - (loc_nmax-n+1);
-                        % set search direction (East of the last move direction)
-                        % directions: 1==S, 2==E, 3==N, 4==W
-                        % GOLDSTEIN path notation reminder:
-                        %        2 == North
-                        %       -2 == South
-                        %        1 == East
-                        %       -1 == West
-                        switch v_paths(end,1)
-                            case {2}
-                                loc_s = 3;
-                            case {-2}
-                                loc_s = 5;
-                            case {1}
-                                loc_s = 2;
-                            case {-1}
-                                loc_s = 4;
-                        end
-                        % continue ...
-                        follow = true;
-                        % report action
-                        disp(['         -> Path interval removed of length: ' num2str(loc_nmax-n+2) ' from border #' num2str(islnd) ' / returning to: (' num2str(loc_i-1) ',' num2str(jmax-(loc_j-1)+1) ')']);
+                    if ( (loc_jj == j) && ((loc_ii == i) || (loc_ii-imax == i)) )
+                        % start cell found -- true end of path!
+                        %%%%%%%%%%%%%%%%%%% ADD MESSAGE %%%%%%%%%%%%%%%%%%%
+                        % allow exit from path
+                        loc_exit = true;
                         % exit (s) loop
                         break;
                     end
                 end
+                %
+                while (~loc_exit)
+                    % (0) mark currnt dead-end cell as searched around
+                    gsn_ex(loc_j,loc_i,islnd) = 1;
+                    % rewind 1 step in the path and look for exit
+                    % report action
+                    disp(['         -> Back-tracking 1 step on path and deleting last path element (#' num2str(n_path) ') @ (' num2str(v_paths(end,2)) ',' num2str(jmax-v_paths(end,3)+1) ')']);
+                    % (1) move back 1 step
+                    % NOTE: correct for extended grid index
+                    loc_i = v_paths(end,2) + 1;
+                    loc_j = v_paths(end,3) + 1;
+                    % (2) remove last path element and reduce path length
+                    v_paths(end,:) = [];
+                    n_path = n_path - 1;
+                    % (3) set search direction (East of the last move direction)
+                    % directions: 1==S, 2==E, 3==N, 4==W
+                    % GOLDSTEIN path notation reminder:
+                    %        2 == North
+                    %       -2 == South
+                    %        1 == East
+                    %       -1 == West
+                    switch v_paths(end,1)
+                        case {2}
+                            loc_s = 3;
+                        case {-2}
+                            loc_s = 5;
+                        case {1}
+                            loc_s = 2;
+                        case {-1}
+                            loc_s = 4;
+                    end
+                    % (4) search again for an 'exit'!
+                    for s = loc_s-1:loc_s+2
+                        loc_jj = loc_j + vdsrch_ex(s,1);
+                        loc_ii = loc_i + vdsrch_ex(s,2);
+                        if (gbn_ex(loc_jj,loc_ii,islnd) == islnd) && ~gsn_ex(loc_jj,loc_ii,islnd)
+                            % end of search for exit!
+                            loc_exit = true;
+                            % report action
+                            disp(['         -> Path continuation point found @ (' num2str(loc_i) ',' num2str(jmax-(loc_j-1)+1) ') -- continuing ...']);
+                            % allow path to progress
+                            follow = true;
+                            % exit (s) loop
+                            break;
+                        end
+                    end
+                    % [sad face]
+                    if (n_path == 1)
+                        disp([' *** The path cannot be completed around border #' num2str(islnd) ' :( Please edit manually. [add: opt_user_borders=true to cookiegen config .m file]']);
+                        disp([' ']);
+                        diary off;
+                        error(['Error. \nFailed to complete path loop @ (',num2str(loc_i),',',num2str(jmax-(loc_j-1)+1),'): %s'],'Exiting ...');
+                        return;
+                    end
+                end % end loc_exit while
             end
         end % end follow while
         % add final location, calculate direction to start, update count
