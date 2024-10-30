@@ -6,7 +6,7 @@
 %
 % *** CONFIG NAME AND INPUT DATA SETTINGS ******************************* %
 %
-par_wor_name='uteXpw__';       % ['STRING'] 8-char (output) config name
+par_wor_name='paleo___';       % ['STRING'] 8-char (output) config name
 par_gcm='hadcm3l';             % ['STRING'] input format/GCM name
 par_expid='teXpw';             % ['STRING'] input experiment/data name
 par_cfgid='CONFIG.16lvl';      % ['STRING'] optional template base-config

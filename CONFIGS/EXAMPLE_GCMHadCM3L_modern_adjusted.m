@@ -6,18 +6,19 @@
 %
 % *** CONFIG NAME AND INPUT DATA SETTINGS ******************************* %
 %
-par_wor_name='modern__';       % ['STRING'] 8-char (output) config name
+par_wor_name='modern_A';       % ['STRING'] 8-char (output) config name
 par_gcm='hadcm3l';             % ['STRING'] input format/GCM name
 par_expid='xbowl';             % ['STRING'] input experiment/data name
 par_cfgid='CONFIG.16lvl';      % ['STRING'] optional template base-config
 par_age=0.0;                   % [0.0-4570.0] optional age (Myr)
+par_mask_name='mask.modern_adjusted'; % ['STRING'] optional mask adjustment name
 %
 % *** INPUT + OUTPUT SETTINGS ******************************************* %
 %
 par_pathin='INPUT';            % ['STRING'] path to input dir
 par_pathout='OUTPUT';          % ['STRING'] path to output dir
 par_plotformat='png';          % 'png' ,'jpg','pdf' (high res), '' for NONE
-opt_user=true;                % [false/true] force user input to grid
+opt_user=false;                % [false/true] force user input to grid
 %
 % *** GRID -- HORIZONTAL ************************************************ %
 %
