@@ -741,13 +741,14 @@ else
     figure; imagesc(go_mask); colorbar; title('ocean mask out -- FINAL version'); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.omask_out.FINAL'] '.' str_date '.' par_plotformat]);
 end
 %
-% save mask for reference (not used as an input)
-fprint_2DM(go_mask(:,:),[],[[str_dirout '/' str_nameout] '.omask_out.FINAL.txt'],'%4.1f','%4.1f',true,false);
-fprintf('       - .mask_out.FINAL.dat saved\n')
-%
 % calculate new fractional area
 [so_farea,so_farearef] = fun_grid_calc_ftotarea(go_mask,go_lone,go_late);
 disp(['       * Final land area fraction   = ', num2str(1.0-so_farea)]);
+%
+% save mask for reference (not used as an input)
+% NOTE: pass mask in as 2nd parameter to force difference in land vs. ocean number format
+fprint_2DM(go_mask(:,:),go_mask(:,:),[[str_dirout '/' str_nameout] '.mask.txt'],'%4.1f','%4.0f',true,false);
+fprintf('       - .mask.txt saved\n')
 %
 % *** RE-GRID TOPO ****************************************************** %
 %
@@ -906,6 +907,9 @@ elseif (strcmp(par_plotformat,'pdf'))
 else
     figure; imagesc(go_masknan.*go_k1); colorbar; title('k1 out -- FINAL ocean version'); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.k1_out.ocean.FINAL'] '.' str_date '.' par_plotformat]);
 end
+% save topo for reference (not used as an input)
+fprint_2DM(go_k1,[],[[str_dirout '/' str_nameout] '.topo.txt'],'%4.0f','%4.0f',true,false);
+fprintf('       - .grid.txt saved\n')
 %
 % *** CALCULATE RUNOFF & COMPLETE k1 FILE ******************************* %
 %
