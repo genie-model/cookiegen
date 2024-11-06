@@ -749,6 +749,9 @@ disp(['       * Final land area fraction   = ', num2str(1.0-so_farea)]);
 % NOTE: pass mask in as 2nd parameter to force difference in land vs. ocean number format
 fprint_2DM(go_mask(:,:),go_mask(:,:),[[str_dirout '/' str_nameout] '.mask.txt'],'%4.1f','%4.0f',true,false);
 fprintf('       - .mask.txt saved\n')
+% save in an alternative format with all zeros
+fprint_2DM(0.0*go_mask(:,:),go_mask(:,:),[[str_dirout '/' str_nameout] '.maskzeros.txt'],'%4.1f','%4.0f',true,false);
+fprintf('       - .maskzeros.txt saved\n')
 %
 % *** RE-GRID TOPO ****************************************************** %
 %
