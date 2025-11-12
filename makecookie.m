@@ -120,8 +120,10 @@ if ~exist('par_sed_Dmax','var'), par_sed_Dmax=6000.0; end
 if ~exist('opt_outputdir','var'), opt_outputdir=false; end
 % [false/true] debug output?
 if ~exist('opt_debug','var'), opt_debug=false; end
-% ['STRING'] templarte base-config name (optional)
+% ['STRING'] template base-config name (optional)
 if ~exist('par_cfgid','var'), par_cfgid=''; end
+% ['STRING'] template user-config name (optional)
+if ~exist('par_usrid','var'), par_usrid=''; end
 %
 % *** cookiegen derived user settings *********************************** %
 %
@@ -1881,7 +1883,7 @@ fprintf('       - .config file saved\n')
 % NOTE: for the terminally lazy user for Xmas ...
 %
 if (~isempty(par_cfgid))
-    %
+    % start
     n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. GENERATING BASE-CONFIG FILE ...']);
     if (opt_debug), input('Press return to CONTINUE ...'); end
@@ -1898,7 +1900,6 @@ if (~isempty(par_cfgid))
     str_templatefilein  = [par_cfgid '.dat'];
     str_templatefileout = ['cookie.C.' par_wor_name '.NONE.config'];
     copyfile([pwd '/' 'DATA' '/' str_templatefilein],[pwd '/' par_pathout '/' str_templatefileout],'f');
-
     % find and get contents of parameter file just created
     loc_file = [str_dirout '/' 'config_' str_date '.txt'];
     loc_parameters = fileread(loc_file);
@@ -1921,9 +1922,25 @@ if (~isempty(par_cfgid))
     for l=1:loc_n_lines
         fprintf(fid, '%s\n', loc_parameters{l});
     end
-    % close file pipe of now config parameter-populated base-config
+    % end / close file pipe of now config parameter-populated base-config
     fclose(fid);
     fprintf('       - .config file saved\n')
+end
+%
+% *** EXPLICITLY PROVIDE A USER-CONFIG ********************************** %
+%
+% NOTE: totally unnecessary ... :o)
+%
+if (~isempty(par_usrid))
+    % start
+    n_step = n_step+1;
+    disp(['>  ' num2str(n_step) '. COPYING USER-CONFIG FILE ...']);
+    % copy template user-config
+    str_templatefilein  = [par_usrid '.dat'];
+    str_templatefileout = ['cookie.C.' par_wor_name '.NONE.SPIN'];
+    copyfile([pwd '/' 'DATA' '/' str_templatefilein],[pwd '/' par_pathout '/' str_templatefileout],'f');
+    % end
+    fprintf('       - .SPIN copied\n')
 end
 %
 % *********************************************************************** %
