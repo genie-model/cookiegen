@@ -25,6 +25,9 @@ function [] = makecookie(POPT)
 %
 %   24/10/11: forked from muffingen
 %             *** v0.9.99 *************************************************
+%   25/11/15: added copy-rename option for a generic user-config
+%             revised all the example configs
+%             revised some of the template use- and base-configs
 %
 %   ***********************************************************************
 %%
@@ -66,17 +69,22 @@ addpath([tmp_path '/' 'CONFIGS']);
 % load configurqation options file
 if isempty(POPT)
     % WARNING
-    disp([' ** WARNING: No config file given -- using cookiegen_config_BLANKGRID.']);
-    disp([' ']);
-    POPT='cookiegen_config_BLANKGRID';
-    eval([CONFIGS '/' POPT]);
-elseif exist([POPT '.m'],'file')
-    eval(POPT);
-else
-    % ERROR
-    disp([' ** ERROR: Cannot find config file: ' POPT '.m']);
+    disp([' ** WARNING: No config filename passed -- EXITING.']);
     disp([' ']);
     return;
+else
+    % strip off the '.m' if that is present in the passed parameter
+    if strcmp(POPT(end-1:end),'.m'), POPT(end-1:end) = []; end
+    % now test whether the file exists!
+    if exist([POPT '.m'],'file')
+        eval(POPT);
+    else
+        % ERROR
+        disp([' ** ERROR: Cannot find config file: ' POPT '.m' ' in any of the MATLAB search paths.']);
+        disp(['           (type: path to list all searched folders)']);
+        disp([' ']);
+        return;
+    end
 end
 %
 % *** cookiegen additional user settings ******************************** %
