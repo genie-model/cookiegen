@@ -36,7 +36,7 @@ bg_par_data_save_level=2
 # e.g., bg_par_data_save_sig_timeinterval=10.0 -> save time-series data every 10.0 years
 # NOTE: set bg_par_data_save_sig_timeinterval=0.0 
 #       in order to employ a file of save years to determine when time-series data is saved
-bg_par_data_save_sig_timeinterval=10.0
+bg_par_data_save_sig_timeinterval=1.0
 # SPECIFY THE INTERVAL AT WHICH TIME-SLICE (SPATIAL) DATA IS SAVED
 # e.g., bg_par_data_save_slice_timeinterval=1000.0 -> save time-slice data every 1000.0 years
 # NOTE: set bg_par_data_save_slice_timeinterval=0.0 

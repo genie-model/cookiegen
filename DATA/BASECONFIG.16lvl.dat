@@ -2,15 +2,12 @@
 # CONFIGURATION TEMPLATE -- for 16 level seasonally forced ocean
 # ********************************************************************
 
-
-# *********************************************************************
+# #####################################################################
 # USER-EDITABLE SECTION
+# #####################################################################
 # *********************************************************************
-# \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-# \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-# *********************************************************************
-# (1) GENIE COMPONENT SELECTION
-#     make .TRUE. additional (optional) cGENIE modules to be included
+# (A) GENIE COMPONENT SELECTION
+#     change to .TRUE. any additional cGENIE modules you need
 # *********************************************************************
 ma_flag_sedgem=.FALSE.
 ma_flag_rokgem=.FALSE.
@@ -18,21 +15,23 @@ ma_flag_gemlite=.FALSE.
 ma_flag_ecogem=.FALSE.
 ma_flag_ents=.FALSE.
 # *********************************************************************
-# (2) TRACER CONFIGURATION
+# (B) TRACER CONFIGURATION
 #     the total number of tracers includes T and S
 #     T and S do not need to be explicited selected and initialzied
+#     BETWEEN THE \/\/ ... /\/\ ... MARKER LINES
+#     delete all 6 lines and paste the replacement block of text of 
+#     tracer selections and corresponding initial values in their place
 # *********************************************************************
-# Set number of tracers
+# \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+# (1) Set total number of 'tracers' in the coean circulation model
 GOLDSTEINNTRACSOPTS='$(DEFINE)GOLDSTEINNTRACS=2'
-# list selected biogeochemical tracers
+# (2) List all selected biogeochemical tracers (excluding T,S)
 # <<<                                                             >>>
-# list biogeochemical tracer initial values
+# (3) List the initial values of all tracers  (excluding T,S)
 # <<<                                                             >>>
-# *********************************************************************
-# /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 # *********************************************************************
-
+# #####################################################################
 
 # *********************************************************************
 # BASIC (required) cGENIE COMPONENT SELECTION
@@ -102,8 +101,12 @@ gs_dosc=.true.
 go_diso=.true.
 # *********************************************************************
 
+# #####################################################################
+# USER-EDITABLE SECTION
+# #####################################################################
 # *********************************************************************
 # GRID & BOUNDARY CONDITION CONFIGURATION
 # *********************************************************************
-# cookiegen-generated parameter list automatically added below
+# Paste the cookiegen-generated parameter list below
+# (if not automatically added)
 # *********************************************************************

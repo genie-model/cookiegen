@@ -54,6 +54,10 @@ bg_ctrl_ncout_expid_name=.false.
 #
 # *** MISC *************************************************************
 #
+# ENABLE THE VENTILATION AGE TRACER CALCULATION
+# NOTE: you *must* have the 'red' color tracer colr included in the base-config 
+#       and hence gm_ocn_select_48=.true.
+bg_ctrl_force_ocn_age1=.true.
 #
 # **********************************************************************
 # *** END **************************************************************
