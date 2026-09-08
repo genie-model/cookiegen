@@ -28,6 +28,11 @@ function [] = makecookie(POPT)
 %   25/11/15: added copy-rename option for a generic user-config
 %             revised all the example configs
 %             revised some of the template use- and base-configs
+%   26/09/08: added analysis of hypsographic curve -- raw vs. regridded
+%             added alternative vertical regridding function:
+%             find_grid_kmid
+%             that finds the closest lower depth edge rather than simply 
+%             the lower depth edge of the layer that a depth falls within
 %
 %   ***********************************************************************
 %%
@@ -91,6 +96,8 @@ end
 %
 % NOTE: mostly these are parameter previously in the config file
 %
+% old or new k1 assignment?
+if ~exist('opt_old_grid_k'), opt_old_grid_k=true; end
 % [0-99] # of ocean levels that are 'extra' 
 if ~exist('par_add_Dk','var'), par_add_Dk=0; end
 % surface layer reference thickness (m)
@@ -811,6 +818,12 @@ if ( ~strcmp(str(1).gcm,'k1') || ~strcmp(str(1).gcm,'k2') )
         figure; imagesc(go_topo); colorbar; title('topo out -- RAW'); exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.topo_out.RAW'] '.' str_date '.' par_plotformat]);
     end
 end
+% evaluate hypsometric curve
+if (~isempty(par_plotformat))
+    figure;
+    fun_eval_bath(gi_lonce,gi_latce,gi_topo',go_lone,go_late,(go_masknan.*go_topo)');
+    exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.BATH'] '.' str_date '.' par_plotformat]);
+end
 %
 % *** RE-GRID VERTICALLY ************************************************ %
 %
@@ -823,7 +836,11 @@ switch str(1).gcm
         disp(['         (Nothing to re-grid as k1 file already loaded.)']);
     otherwise
         % convert depth into k levels (and create k1 grid)
-        [go_k1] = find_grid_k(par_min_Dk,go_dm,go_de,go_mask,go_topo);
+        if opt_old_grid_k
+            [go_k1] = find_grid_k(par_min_Dk,go_dm,go_de,go_mask,go_topo);
+        else
+            [go_k1] = find_grid_kmid(par_min_Dk,go_dm,go_de,go_mask,go_topo);
+        end
         fprintf('       - Bathymetry re-gridding complete.\n')
 end
 % filter min k value

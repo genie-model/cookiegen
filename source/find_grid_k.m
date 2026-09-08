@@ -6,6 +6,9 @@ function [grid_k1]  = find_grid_k(par_min_Dk,v_dm,v_de,grid_mask,grid_topo)
 % *** CONVERT TOPOGRAPHY INTO DEPTH LEVELS ****************************** %
 % *********************************************************************** %
 %
+% NOTE: this finds the layer (and associated k value) 
+%       within which an input depth lies
+%       NOT the layer bottom depth closest to an input depth
 % determine grid size
 [jmax imax] = size(grid_topo);
 kmax = length(v_dm);
