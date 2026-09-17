@@ -68,6 +68,12 @@ tmp_path = tmp_path(1:end-length(str_function)-3);
 addpath([tmp_path '/' 'source']);
 addpath([tmp_path '/' 'DATA']);
 addpath([tmp_path '/' 'CONFIGS']);
+% also add the directory where the config file lives,
+% and in case this is /CONFIGS of some random directory, also add ../INPUT
+tmp_pdw = pwd;
+addpath([tmp_pdw]);
+addpath([tmp_pdw '/' 'INPUT']);
+addpath([tmp_pdw '../' 'INPUT']);
 %
 % *** load cookiegen configuration ************************************** %
 %
@@ -819,10 +825,13 @@ if ( ~strcmp(str(1).gcm,'k1') || ~strcmp(str(1).gcm,'k2') )
     end
 end
 % evaluate hypsometric curve
-if (~isempty(par_plotformat))
-    figure;
-    fun_eval_bath(gi_lonce,gi_latce,gi_topo',go_lone,go_late,(go_masknan.*go_topo)');
-    exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.BATH'] '.' str_date '.' par_plotformat]);
+switch str(1).gcm
+    case {'hadcm3','hadcm3l','foam','cesm','rockee','mat'}
+        if (~isempty(par_plotformat))
+            figure;
+            fun_eval_bath(gi_lonce,gi_latce,gi_topo',go_lone,go_late,(go_masknan.*go_topo)');
+            exportgraphics(gcf,[[[str_dirout '/' str_nameout] '.BATH'] '.' str_date '.' par_plotformat]);
+        end
 end
 %
 % *** RE-GRID VERTICALLY ************************************************ %
@@ -1136,12 +1145,13 @@ if opt_makegold
         disp([' ']);
     end
     % check for too many!
+    % NOTE: disable hard error and exit
     if ((n_islands-1) > 9)
-        disp(['       * ERROR: Too many separate land masses. Total number of true islands = ' num2str(n_islands-1) ' and the maximum allowed is 9.']);
-        disp(['       *        (Note that the number of true islands is one less than the number of land masses (psiles = ' num2str(n_islands) ') and this count also includes zero-area polar-covering islands if you have them.)']);
+        disp(['       * WARNING: Too many separate land masses. Total number of true islands = ' num2str(n_islands-1) ' and the maximum allowed is 9.']);
+        disp(['       *          (Note that the number of true islands is one less than the number of land masses (psiles = ' num2str(n_islands) ') and this count also includes zero-area polar-covering islands if you have them.)']);
         disp([' ']);
-        diary off;
-        return;
+        %%%diary off;
+        %%%return;
     end
     %
 end
@@ -1922,9 +1932,11 @@ if (~isempty(par_cfgid))
         return;
     end
     % copy template
+    % NOTE: let MATLAB find the location of the source file through 
+    %       defined paths rather thanhard-code its location
     str_templatefilein  = [par_cfgid '.dat'];
     str_templatefileout = ['cookie.C.' par_wor_name '.NONE.config'];
-    copyfile([pwd '/' 'DATA' '/' str_templatefilein],[pwd '/' par_pathout '/' str_templatefileout],'f');
+    copyfile(which(str_templatefilein),[pwd '/' par_pathout '/' str_templatefileout],'f');
     % find and get contents of parameter file just created
     loc_file = [str_dirout '/' 'config_' str_date '.txt'];
     loc_parameters = fileread(loc_file);
@@ -1963,7 +1975,7 @@ if (~isempty(par_usrid))
     % copy template user-config
     str_templatefilein  = [par_usrid '.dat'];
     str_templatefileout = ['cookie.C.' par_wor_name '.NONE.SPIN'];
-    copyfile([pwd '/' 'DATA' '/' str_templatefilein],[pwd '/' par_pathout '/' str_templatefileout],'f');
+    copyfile(which(str_templatefilein),[pwd '/' par_pathout '/' str_templatefileout],'f');
     % end
     fprintf('       - .SPIN copied\n')
 end
