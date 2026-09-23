@@ -33,6 +33,8 @@ function [] = makecookie(POPT)
 %             find_grid_kmid
 %             that finds the closest lower depth edge rather than simply 
 %             the lower depth edge of the layer that a depth falls within
+%   36/09/21: minor path adjustments
+%             set opt_filtertopo=false for k1,k2,mask input
 %
 %   ***********************************************************************
 %%
@@ -72,8 +74,8 @@ addpath([tmp_path '/' 'CONFIGS']);
 % and in case this is /CONFIGS of some random directory, also add ../INPUT
 tmp_pdw = pwd;
 addpath([tmp_pdw]);
-addpath([tmp_pdw '/' 'INPUT']);
-addpath([tmp_pdw '../' 'INPUT']);
+if (exist([tmp_pdw '/' 'INPUT'],'dir') == 7), addpath([tmp_pdw '/' 'INPUT']); end
+if (exist([fileparts(pwd) '/' 'INPUT'],'dir') == 7), addpath([fileparts(pwd) '/' 'INPUT']); end
 %
 % *** load cookiegen configuration ************************************** %
 %
@@ -412,9 +414,12 @@ switch str(1).gcm
         opt_makezonalalbedo=true;
     case {'k1','mask','k2'}
         opt_filtermask=false;
+        opt_filtertopo=false;
         opt_makezonalwind=true;
         opt_makezonalalbedo=true;
     case {'blank'}
+        opt_filtermask=false;
+        opt_filtertopo=false;
         opt_makezonalwind=true;
         opt_makezonalalbedo=true;
     otherwise
@@ -715,12 +720,11 @@ end
 %
 % *** ADJUST MASK -- USER! ********************************************** %
 %
-n_step = n_step+1;
-if (opt_debug), input('Press return to CONTINUE ...'); end
-%
 if opt_user
     %
+    n_step = n_step+1;
     disp(['>   ' num2str(n_step) '. USER EDITING OF MASK ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     %
     [go_mask]  = fun_grid_edit_mask(go_mask,go_fmask);
     % increment VERSION
@@ -865,13 +869,12 @@ end
 %
 % *** ADJUST TOPO -- AUTOMATIC BATHYMETRY FILTERING ********************* %
 %
-n_step = n_step+1;
-if (opt_debug), input('Press return to CONTINUE ...'); end
-%
 % carry out basic automatic topo filtering
 if (opt_filtertopo)
     %
+    n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. FILTERING BATHYMETRY ...']);
+    if (opt_debug), input('Press return to CONTINUE ...'); end
     %
     [go_k1] = fun_grid_topo_filter(go_k1);
     fprintf('       - Topography filtered.\n')
@@ -888,6 +891,7 @@ end
 % *** ADJUST TOPO -- USER! ********************************************** %
 %
 if (opt_user)
+    %
     n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. USER EDITING OF TOPO ...']);
     if (opt_debug), input('Press return to CONTINUE ...'); end
