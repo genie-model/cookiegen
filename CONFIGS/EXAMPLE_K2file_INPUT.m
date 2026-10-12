@@ -9,8 +9,8 @@
 par_wor_name='work2in_';       	% ['STRING'] 8-char (output) config name
 par_gcm='k2';                  	% ['STRING'] input format/GCM name
 par_expid='work2in_';          	% ['STRING'] input experiment/data name
-par_cfgid='BASECONFIG.16lvl';  	% ['STRING'] optional template base-config
-par_usrid='USERCONFIG.abiotic'; % ['STRING'] optional template user-config
+par_cfgid='BASECONFIG.16lvl.age';  	% ['STRING'] optional template base-config
+par_usrid='USERCONFIG.age';	% ['STRING'] optional template user-config
 par_age=0.0;                   	% [0.0-4570.0] optional age (Myr)
 %
 % *** INPUT + OUTPUT SETTINGS ******************************************* %
