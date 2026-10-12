@@ -33,8 +33,12 @@ function [] = makecookie(POPT)
 %             find_grid_kmid
 %             that finds the closest lower depth edge rather than simply 
 %             the lower depth edge of the layer that a depth falls within
-%   36/09/21: minor path adjustments
+%   26/09/21: minor path adjustments
 %             set opt_filtertopo=false for k1,k2,mask input
+%   26/10/11: changed default par_A_frac_threshold=0.35
+%             added more paths ...
+%             to name automatically generated base- (and user-) config
+%             files, use last 4 digits of hash of template base-config name
 %
 %   ***********************************************************************
 %%
@@ -70,6 +74,9 @@ tmp_path = tmp_path(1:end-length(str_function)-3);
 addpath([tmp_path '/' 'source']);
 addpath([tmp_path '/' 'DATA']);
 addpath([tmp_path '/' 'CONFIGS']);
+addpath([tmp_path '/' 'CGENIE.baseconfigs']);
+addpath([tmp_path '/' 'CGENIE.forcings']);
+addpath([tmp_path '/' 'CGENIE.userconfigs']);
 % also add the directory where the config file lives,
 % and in case this is /CONFIGS of some random directory, also add ../INPUT
 tmp_pdw = pwd;
@@ -111,7 +118,7 @@ if ~exist('par_add_Dk','var'), par_add_Dk=0; end
 % surface layer reference thickness (m)
 if ~exist('par_sur_D','var'), par_sur_D = 0.0; end
 % [0.0-1.0] land fractional area threshold 
-if ~exist('par_A_frac_threshold','var'), par_A_frac_threshold=0.5; end
+if ~exist('par_A_frac_threshold','var'), par_A_frac_threshold=0.35; end
 % mask mask!
 if ~exist('par_mask_name','var'), par_mask_name = ''; end
 % [false/true] filter land-sea mask?
@@ -1915,7 +1922,7 @@ end
 % END
 fprintf(fid,'%s\n','##################################################################################');
 fclose(fid);
-fprintf('       - .config file saved\n')
+fprintf('       - .config parameters saved\n')
 %
 % *** APPEND CONFIG FILE TO TEMPLATE BASE-CONFIG ************************ %
 %
@@ -1928,18 +1935,21 @@ if (~isempty(par_cfgid))
     if (opt_debug), input('Press return to CONTINUE ...'); end
     %
     % first check that template base-config file exists ...
-    if (exist([par_cfgid '.dat'], 'file') ~= 2)
-        disp(['       * ERROR: Template base-config filename ( ' par_cfgid '.dat) cannot be found.']);
+    if (exist([par_cfgid '.config'], 'file') ~= 2)
+        disp(['       * ERROR: Template base-config filename ( ' par_cfgid '.config) cannot be found.']);
         disp(['--------------------------------------------------------']);
         disp([' ']);
         diary off;
         return;
     end
+    % create hash of template filename
+    % NOTE: use last 4 hex digits
+    loc_str_hash = char(mlreportgen.utils.hash([par_cfgid '.config']));
     % copy template
     % NOTE: let MATLAB find the location of the source file through 
     %       defined paths rather thanhard-code its location
-    str_templatefilein  = [par_cfgid '.dat'];
-    str_templatefileout = ['cookie.C.' par_wor_name '.NONE.config'];
+    str_templatefilein  = [par_cfgid '.config'];
+    str_templatefileout = ['cookie.' par_wor_name '.' loc_str_hash(end-3:end) '.config'];
     copyfile(which(str_templatefilein),[pwd '/' par_pathout '/' str_templatefileout],'f');
     % find and get contents of parameter file just created
     loc_file = [str_dirout '/' 'config_' str_date '.txt'];
@@ -1977,8 +1987,8 @@ if (~isempty(par_usrid))
     n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. COPYING USER-CONFIG FILE ...']);
     % copy template user-config
-    str_templatefilein  = [par_usrid '.dat'];
-    str_templatefileout = ['cookie.C.' par_wor_name '.NONE.SPIN'];
+    str_templatefilein  = [par_usrid '.SPIN'];
+    str_templatefileout = ['cookie.' par_wor_name '.' loc_str_hash(end-3:end) '.SPIN'];
     copyfile(which(str_templatefilein),[pwd '/' par_pathout '/' str_templatefileout],'f');
     % end
     fprintf('       - .SPIN copied\n')
