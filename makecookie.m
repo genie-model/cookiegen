@@ -11,10 +11,8 @@ function [] = makecookie(POPT)
 %   --> the string for the configuration parameter file
 %   --> if an empty (i.e., '') value is passed to this parameter
 %       then the default parameter set is used (makecookie_settings_BLANK)
-%
 %   NOTE: grid/matrix orientations are :: [LAT,LON] (rows x columns)
 %         (i.e., the orientation as you would view the raw data)
-%
 %   NOTE: for plotting grids (plot_2dgridded)
 %         arrays need to be flipped up-down
 %         (to un-do the visually-correct orientation used as standard)
@@ -39,12 +37,15 @@ function [] = makecookie(POPT)
 %             added more paths ...
 %             to name automatically generated base- (and user-) config
 %             files, use last 4 digits of hash of template base-config name
+%   26/10/16: ... and then commented out the annoying hash filename bit
+%   26/10/20: fixed accidental reversing of the 1D zonal albedo profile
+%             *** v1.00 ***************************************************
 %
 %   ***********************************************************************
 %%
 
 % *********************************************************************** %
-% *** INITIALIZE MUFFINGEN ********************************************** %
+% *** INITIALIZE COOKIEGEN ********************************************** %
 % *********************************************************************** %
 %
 % *** initialize cookiegen ********************************************** %
@@ -54,7 +55,7 @@ disp(['>>> INITIALIZING ...']);
 % set function name
 str_function = 'makecookie';
 % set version!
-str_cookiegen_ver = 'v0.9.99';
+str_cookiegen_ver = 'v1.00';
 % set date
 str_date = [datestr(date,11), datestr(date,5), datestr(date,7)];
 % close existing plot windows
@@ -1375,7 +1376,8 @@ if (~opt_makezonalalbedo)
             fprint_2DM(go_albd(:,:),[],[[str_dirout '/' str_nameout] '.2Dalbd_pl.dat'],'%8.4f','%8.4f',true,false);
             fprintf('       - 2D planetary albedo file saved\n')
             % create zonal mean
-            vo_albd = mean(go_albd');
+            % NOTE: mean(go_albd,2) == sum rows (default is columns)
+            vo_albd = mean(go_albd,2);
             disp(['       - Generated zonal mean planetary albedo profile.']);
         otherwise
             % 
@@ -1383,35 +1385,39 @@ if (~opt_makezonalalbedo)
 else
     % NOTE: if age == 0, then default (modern) GENIE,
     %       otherwise for generic ice-free world
-    vo_albd = make_grid_albd(go_latm,par_age);
+    [vo_albd,vo_albd_atm] = make_grid_albd(go_latm,par_age);
     disp(['       - Created generic zonal mean planetary albedo profile.'])
-    % plot output albedo profile
-    if (isempty(par_plotformat))
-        %
-    else
-        figure;
-        scatter(go_latm,vo_albd);
-        axis([-90 90 0.0 1.0]);
-        xlabel('Latitude');
-        ylabel('Albedo');
-        title('Zonally averaged planetary albedo profile');
-        % save figure
-        if (strcmp(par_plotformat,'pdf'))
-            exportgraphics(gcf,[[str_dirout '/' str_nameout] '.zonalalbd_pl.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
-        else
-            exportgraphics(gcf,[[str_dirout '/' str_nameout] '.zonalalbd_pl.' str_date '.' par_plotformat]);
-        end
-    end
 end
-% reorientate albedo vector for saving
-vo_albd = fliplr(vo_albd);
 % save planetary albedo vector
 % NOTE: when the file is read in by GENIE, it counts down in j value:
 %       such that the N pole is the first element in file;
-%       fprint_1Dn saves the 2st row at the top, hence the vector
+%       fprint_1Dn saves the 1st row at the top, hence the vector
 %       must be orientated as in a map orientation (N at top)
+%       initialise_embm.F ca. line 900:
+%           do j=jmax,1,-1
+%               read(35,*) albz(j)
+%           enddo
+%      make_grid_albd includes this re-orientation
 fprint_1Dn(vo_albd(:),[[str_dirout '/' str_nameout] '.albd_pl.dat'],'%8.4f','%8.4f',true,false);
 fprintf('       - Zonal mean .albd_pl.dat file saved\n')
+% plot output albedo profile
+% NOTE: flip back for plotting (so that the first row is South)
+if (isempty(par_plotformat))
+    %
+else
+    figure;
+    scatter(go_latm,flipud(vo_albd));
+    axis([-90 90 0.0 1.0]);
+    xlabel('Latitude');
+    ylabel('Albedo');
+    title('Zonally averaged planetary albedo profile');
+    % save figure
+    if (strcmp(par_plotformat,'pdf'))
+        exportgraphics(gcf,[[str_dirout '/' str_nameout] '.zonalalbd_pl.' str_date '.pdf'],'BackgroundColor','none','ContentType','vector');
+    else
+        exportgraphics(gcf,[[str_dirout '/' str_nameout] '.zonalalbd_pl.' str_date '.' par_plotformat]);
+    end
+end
 %
 % *** LOAD & PROCESS FULL ALBEDO PRODUCTS ******************************* %
 %
@@ -1933,7 +1939,10 @@ if (~isempty(par_cfgid))
     n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. GENERATING BASE-CONFIG FILE ...']);
     if (opt_debug), input('Press return to CONTINUE ...'); end
-    %
+    % string off '.config' from filestring if it exists
+    if strcmp(par_cfgid(end-6:end),'.config')
+        par_cfgid = par_cfgid(1:end-7);
+    end
     % first check that template base-config file exists ...
     if (exist([par_cfgid '.config'], 'file') ~= 2)
         disp(['       * ERROR: Template base-config filename ( ' par_cfgid '.config) cannot be found.']);
@@ -1949,7 +1958,8 @@ if (~isempty(par_cfgid))
     % NOTE: let MATLAB find the location of the source file through 
     %       defined paths rather thanhard-code its location
     str_templatefilein  = [par_cfgid '.config'];
-    str_templatefileout = ['cookie.' par_wor_name '.' loc_str_hash(end-3:end) '.config'];
+    % str_templatefileout = ['cookie.' par_wor_name '.' loc_str_hash(end-3:end) '.config'];
+    str_templatefileout = ['cookie.' par_wor_name '.config'];
     copyfile(which(str_templatefilein),[pwd '/' par_pathout '/' str_templatefileout],'f');
     % find and get contents of parameter file just created
     loc_file = [str_dirout '/' 'config_' str_date '.txt'];
@@ -1986,9 +1996,14 @@ if (~isempty(par_usrid))
     % start
     n_step = n_step+1;
     disp(['>  ' num2str(n_step) '. COPYING USER-CONFIG FILE ...']);
+    % string off '.SPIN' from filestring if it exists
+    if strcmp(par_usrid(end-4:end),'.SPIN')
+        par_usrid = par_usrid(1:end-5);
+    end
     % copy template user-config
     str_templatefilein  = [par_usrid '.SPIN'];
-    str_templatefileout = ['cookie.' par_wor_name '.' loc_str_hash(end-3:end) '.SPIN'];
+    % str_templatefileout = ['cookie.' par_wor_name '.' loc_str_hash(end-3:end) '.SPIN'];
+    str_templatefileout = ['cookie.' par_wor_name '.SPIN'];
     copyfile(which(str_templatefilein),[pwd '/' par_pathout '/' str_templatefileout],'f');
     % end
     fprintf('       - .SPIN copied\n')
@@ -2003,8 +2018,8 @@ end
 % final messages
 disp([' ']);
 disp(['------------------------------------------------------------']);
-disp(['   Congratulations! SOMETHING was created ... ']);
-disp(['   ... hope it was what you wished for! :o)']);
+disp(['   Congratulations! ']);
+disp(['   You have baked a deliceous cookie configuration. ']);
 disp(['------------------------------------------------------------']);
 disp([' ']);
 % end logging

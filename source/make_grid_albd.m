@@ -9,7 +9,7 @@ function [vo_albd,vo_albd_atm]  = make_grid_albd(go_latm,par_age)
 % determine output vector size
 [jmax] = length(go_latm);
 % create otput vectors
-vo_albd = 0.0*go_latm;
+vo_albd     = 0.0*go_latm;
 vo_albd_atm = 0.0*go_latm;
 % convert rad to deg
 loc_latm = (pi/180.0)*go_latm;
@@ -55,6 +55,15 @@ for j = 1:jmax
     % atmospheric or 'cloud' albedo
     vo_albd_atm(j) = atmalbedo_offset + atmalbedo_amp*0.5*(1.0 - cos(2.0*loc_latm(j)) + atmalbedo_mod*cos(6.0*loc_latm(j)));
 end
+% reorientate albedo vectors for saving
+% (when the file is read in by GENIE, it counts down in j value such that
+%  the N pole is the first element in file)
+% NOTE: as currently configured, the generic zonal mean albedo profile is
+%       *zonally symmetric* 
+%       and hence does not in fact require flipping, but we re-orientate
+%       the order vs. j for completenness (so jmax is the first element)
+vo_albd     = fliplr(vo_albd);
+vo_albd_atm = fliplr(vo_albd_atm);
 %
 % *********************************************************************** %
 
@@ -62,6 +71,5 @@ end
 % *** END *************************************************************** %
 % *********************************************************************** %
 %
-%%%
 %
 % *********************************************************************** %
