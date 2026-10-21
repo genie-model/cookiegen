@@ -1,0 +1,11 @@
+# *******************************************************************
+# (1) Set total number of 'tracers' in the coean circulation model
+# (adding the 'red' color tracer (colr) to T and S makes 3 total)
+GOLDSTEINNTRACSOPTS='$(DEFINE)GOLDSTEINNTRACS=3'
+# (2) List all selected biogeochemical tracers (excluding T,S)
+gm_ocn_select_48=.true.     #   colr -- 'RED numerical (color) tracer' 
+# (3) List the initial values of all tracers  (excluding T,S)
+# Note that all tracers are initialized to zero by default and hence 
+# tracers to be initialized to zero need not be listed.
+bg_ocn_init_48=0.0
+# *******************************************************************
