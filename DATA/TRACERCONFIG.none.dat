@@ -1,0 +1,4 @@
+# *******************************************************************
+# Set minimum number of 'tracers' in the ocean circulation model
+GOLDSTEINNTRACSOPTS='$(DEFINE)GOLDSTEINNTRACS=2'
+# *******************************************************************
