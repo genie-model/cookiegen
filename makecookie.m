@@ -39,6 +39,7 @@ function [] = makecookie(POPT)
 %             files, use last 4 digits of hash of template base-config name
 %   26/10/16: ... and then commented out the annoying hash filename bit
 %   26/10/20: fixed accidental reversing of the 1D zonal albedo profile
+%   26/10/20: reorganized automatic base- and user-config generation
 %             *** v1.00 ***************************************************
 %
 %   ***********************************************************************
@@ -75,9 +76,6 @@ tmp_path = tmp_path(1:end-length(str_function)-3);
 addpath([tmp_path '/' 'source']);
 addpath([tmp_path '/' 'DATA']);
 addpath([tmp_path '/' 'CONFIGS']);
-addpath([tmp_path '/' 'CGENIE.baseconfigs']);
-addpath([tmp_path '/' 'CGENIE.forcings']);
-addpath([tmp_path '/' 'CGENIE.userconfigs']);
 % also add the directory where the config file lives,
 % and in case this is /CONFIGS of some random directory, also add ../INPUT
 tmp_pdw = pwd;
@@ -112,6 +110,12 @@ end
 %
 % NOTE: mostly these are parameter previously in the config file
 %
+% compatability
+if ~exist('par_gcmid')
+    par_gcm=''; 
+else
+    par_gcm=par_gcmid; 
+end
 % old or new k1 assignment?
 if ~exist('opt_old_grid_k'), opt_old_grid_k=true; end
 % [0-99] # of ocean levels that are 'extra' 
@@ -151,10 +155,8 @@ if ~exist('par_sed_Dmax','var'), par_sed_Dmax=6000.0; end
 if ~exist('opt_outputdir','var'), opt_outputdir=false; end
 % [false/true] debug output?
 if ~exist('opt_debug','var'), opt_debug=false; end
-% ['STRING'] template base-config name (optional)
-if ~exist('par_cfgid','var'), par_cfgid=''; end
-% ['STRING'] template user-config name (optional)
-if ~exist('par_usrid','var'), par_usrid=''; end
+% ['STRING'] tracer configuration name
+if ~exist('par_tcrid','var'), par_tcrid='none'; end
 %
 % *** cookiegen derived user settings *********************************** %
 %
@@ -1926,88 +1928,113 @@ else
     fprintf(fid,'%s\n',['bg_ocn_init_38=','28.240E-03']);
 end
 % END
-fprintf(fid,'%s\n','##################################################################################');
+% NOTE: skip the '/n' for cleaner file merge
+fprintf(fid,'%s','##################################################################################');
 fclose(fid);
 fprintf('       - .config parameters saved\n')
 %
-% *** APPEND CONFIG FILE TO TEMPLATE BASE-CONFIG ************************ %
+% *** CREATE BASE-CONFIG ************************************************ %
 %
 % NOTE: for the terminally lazy user for Xmas ...
 %
-if (~isempty(par_cfgid))
-    % start
-    n_step = n_step+1;
-    disp(['>  ' num2str(n_step) '. GENERATING BASE-CONFIG FILE ...']);
-    if (opt_debug), input('Press return to CONTINUE ...'); end
-    % string off '.config' from filestring if it exists
-    if strcmp(par_cfgid(end-6:end),'.config')
-        par_cfgid = par_cfgid(1:end-7);
-    end
-    % first check that template base-config file exists ...
-    if (exist([par_cfgid '.config'], 'file') ~= 2)
-        disp(['       * ERROR: Template base-config filename ( ' par_cfgid '.config) cannot be found.']);
-        disp(['--------------------------------------------------------']);
-        disp([' ']);
-        diary off;
-        return;
-    end
-    % create hash of template filename
-    % NOTE: use last 4 hex digits
-    loc_str_hash = char(mlreportgen.utils.hash([par_cfgid '.config']));
-    % copy template
-    % NOTE: let MATLAB find the location of the source file through 
-    %       defined paths rather thanhard-code its location
-    str_templatefilein  = [par_cfgid '.config'];
-    % str_templatefileout = ['cookie.' par_wor_name '.' loc_str_hash(end-3:end) '.config'];
-    str_templatefileout = ['cookie.' par_wor_name '.config'];
-    copyfile(which(str_templatefilein),[pwd '/' par_pathout '/' str_templatefileout],'f');
-    % find and get contents of parameter file just created
-    loc_file = [str_dirout '/' 'config_' str_date '.txt'];
-    loc_parameters = fileread(loc_file);
-    loc_parameters = regexp(loc_parameters, '\n', 'split');
-    loc_n_lines = length(loc_parameters);
-    % open sesame! (file pipe of copied template base-config)
-    fid = fopen([pwd '/' par_pathout '/' str_templatefileout], 'a+');
-    % write parameter file header info
-    loc_str = '# ';
-    fprintf(fid, '%s\n', loc_str);
-    loc_str = '# --- appended by MATLAB with love :) --------------------------------';
-    fprintf(fid, '%s\n', loc_str);
-    loc_str = '# ';
-    fprintf(fid, '%s\n', loc_str);
-    % write config parameters -- loop through all parameters
-    loc_str = '# > cookiegen parameter values';
-    fprintf(fid, '%s\n', loc_str);
-    loc_str = '# ';
-    fprintf(fid, '%s\n', loc_str);
-    for l=1:loc_n_lines
-        fprintf(fid, '%s\n', loc_parameters{l});
-    end
-    % end / close file pipe of now config parameter-populated base-config
-    fclose(fid);
-    fprintf('       - .config file saved\n')
+if (isempty(par_tcrid)), par_tcrid = 'NONE'; end
+% start
+n_step = n_step+1;
+disp(['>  ' num2str(n_step) '. GENERATING BASE-CONFIG FILE ...']);
+if (opt_debug), input('Press return to CONTINUE ...'); end
+% select template base-config based on # ocean levels
+% (simply, 10 or more assumes a standard 16-level seasonal tuning)
+if (par_max_k > 9)
+    str_templatebaseconfig = 'BASECONFIG.16lvl';
+else
+    str_templatebaseconfig = 'BASECONFIG.8lvl';
 end
+% now check that ocean tracer option exists ...
+% strip '.dat'; from the ID string if it exists
+% (par_tcrid is at least 4 characters)
+if ( (length(par_tcrid) > 4) && strcmp(par_tcrid(end-3:end),'.dat') ), par_tcrid = par_tcrid(1:end-4); end
+% strip 'TRACERCONFIG.'; from the ID string if it exists
+% (par_tcrid is at least 13 characters)
+if ( (length(par_tcrid) > 13) && strcmp(par_tcrid(1:13),'TRACERCONFIG.') ), par_tcrid = par_tcrid(14:end); end
+% check the reconstructed file exists!
+if (exist(['TRACERCONFIG.' par_tcrid '.dat'], 'file') ~= 2)
+    disp(['       * ERROR: tracer definition filename TRACERCONFIG.' par_tcrid '.dat cannot be found.']);
+    disp(['--------------------------------------------------------']);
+    disp([' ']);
+    diary off;
+    return;
+end
+% copy template
+% NOTE: let MATLAB find the location of the source file through
+%       defined paths rather than hard-code its location
+str_templatefilein  = [str_templatebaseconfig '.config'];
+str_templatefileout = ['cookie.' par_wor_name '.' par_tcrid '.config'];
+copyfile(which(str_templatefilein),[pwd '/' par_pathout '/' str_templatefileout],'f');
+% open sesame! (open file pipe of base-config)
+fid = fopen([pwd '/' par_pathout '/' str_templatefileout], 'a+');
+% write parameter file header info
+loc_str = '# ';
+fprintf(fid, '%s\n', loc_str);
+% load contents of tracer config file
+loc_file = ['TRACERCONFIG.' par_tcrid '.dat'];
+loc_parameters = fileread(loc_file);
+loc_parameters = regexp(loc_parameters, '\n', 'split');
+loc_n_lines = length(loc_parameters);
+% write tracer config parameter
+loc_str = '# > tracer definition';
+fprintf(fid, '%s\n', loc_str);
+loc_str = '# ';
+fprintf(fid, '%s\n', loc_str);
+for l=1:loc_n_lines
+    fprintf(fid, '%s\n', loc_parameters{l});
+end
+loc_str = '# ';
+fprintf(fid, '%s\n', loc_str);
+% new section
+% write config parameters -- loop through all parameters
+loc_str = '# > cookiegen parameter values';
+fprintf(fid, '%s\n', loc_str);
+loc_str = '# ';
+fprintf(fid, '%s\n', loc_str);
+% load contents of cookiegen parameter file
+loc_file = [str_dirout '/' 'config_' str_date '.txt'];
+loc_parameters = fileread(loc_file);
+loc_parameters = regexp(loc_parameters, '\n', 'split');
+loc_n_lines = length(loc_parameters);
+% write tracer config parameter
+for l=1:loc_n_lines
+    fprintf(fid, '%s\n', loc_parameters{l});
+end
+loc_str = '# ';
+fprintf(fid, '%s\n', loc_str);
+% print end
+loc_str = '# > end';
+fprintf(fid, '%s\n', loc_str);
+loc_str = '# ';
+fprintf(fid, '%s\n', loc_str);
+% end / close file pipe of now config parameter-populated base-config
+fclose(fid);
+fprintf('       - .config file saved\n')
 %
 % *** EXPLICITLY PROVIDE A USER-CONFIG ********************************** %
 %
-% NOTE: totally unnecessary ... :o)
-%
-if (~isempty(par_usrid))
-    % start
-    n_step = n_step+1;
-    disp(['>  ' num2str(n_step) '. COPYING USER-CONFIG FILE ...']);
-    % string off '.SPIN' from filestring if it exists
-    if strcmp(par_usrid(end-4:end),'.SPIN')
-        par_usrid = par_usrid(1:end-5);
-    end
-    % copy template user-config
-    str_templatefilein  = [par_usrid '.SPIN'];
-    % str_templatefileout = ['cookie.' par_wor_name '.' loc_str_hash(end-3:end) '.SPIN'];
-    str_templatefileout = ['cookie.' par_wor_name '.SPIN'];
-    copyfile(which(str_templatefilein),[pwd '/' par_pathout '/' str_templatefileout],'f');
-    % end
-    fprintf('       - .SPIN copied\n')
+% define a generic user-config
+% NOTE: this could select a tem[plate user-config based on 
+% tracer selection (and absed-config)
+str_templateuserconfig = 'USERCONFIG.SPIN';
+% start
+n_step = n_step+1;
+disp(['>  ' num2str(n_step) '. COPYING USER-CONFIG FILE ...']);
+% string off '.SPIN' from filestring if it exists
+if strcmp(str_templateuserconfig(end-4:end),'.SPIN')
+    str_templateuserconfig = str_templateuserconfig(1:end-5);
 end
+% copy template user-config
+str_templatefilein  = [str_templateuserconfig '.SPIN'];
+str_templatefileout = ['cookie.' par_wor_name '.' par_tcrid '.SPIN'];
+copyfile(which(str_templatefilein),[pwd '/' par_pathout '/' str_templatefileout],'f');
+% end
+fprintf('       - .SPIN copied\n')
 %
 % *********************************************************************** %
 
