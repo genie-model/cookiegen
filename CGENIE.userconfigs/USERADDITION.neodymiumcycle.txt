@@ -1,7 +1,0 @@
-#
-# *** Neodymium CYCLE ***********************************************
-#
-# NOTE: currently there is no mechansitic Nd cycle option
-#       hence just include a restoring oforcing of Nd concentrations and isotopes
-#
-# *******************************************************************
